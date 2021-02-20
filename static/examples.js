@@ -1,18 +1,14 @@
 //bubblesort
 
-createAnimation('type','list')
-var items = [4,3,2,1];
-createAnimation('setItems',items);
+list.setItems([4,3,2,1])
+
 var swapped = true;
 
 while(swapped){
   swapped = false;
-  for(var i = 0; i < items.length - 1; i++){
-    if(items[i] > items[i+1]){
-      var temp = items[i];
-      items[i] = items[i+1];
-      items[i+1] = temp;
-      createAnimation('swap',[i,i+1]);
+  for(var i = 0; i < list.length() - 1; i++){
+    if(list.get(i) > list.get(i+1)){
+      list.swap(i,i+1);
       swapped = true;
     }
   }

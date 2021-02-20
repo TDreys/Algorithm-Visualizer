@@ -4,17 +4,13 @@ var animationList = [];
 function load(code){
   myInterpreter = new Interpreter(code,initFunc);
   animationList = [];
-  myInterpreter.run();
+  nextStep();
 }
 
 function nextStep() {
   if (myInterpreter.step()) {
     window.setTimeout(nextStep, 0);
   }
-}
-
-function step(){
-  console.log(myInterpreter.step());
 }
 
 function execute(code){
@@ -44,22 +40,20 @@ function execute(code){
 
   for(var i = 1; i < animationList.length; i++){
     switch (animationList[i][0]) {
-      case 'setItems':  animator.setItems(animationList[i][1]);break;
+      case 'setItems':  console.log("setitems"); break;
       case 'swap':  console.log("swap"); break;
-      //case 'highlight':  console.log("highlight"); break;
-      //case 'append': console.log("append"); break;
+      case 'highlight':  console.log("highlight"); break;
+      case 'append': console.log("append"); break;
     }
   }
 }
 
+function step(){
+  console.log("implement");
+}
+
 function createAnimation(animation,params){
-  if(typeof params == 'object'){
-    animationList.push([animation,Object.values(Object.values(params)[2])]);
-  }
-  else {
-    animationList.push([animation,params]);
-  }
-  console.log(animationList);
+  animationList.push([animation,params]);
 }
 
 function initFunc(interpreter, globalObject){

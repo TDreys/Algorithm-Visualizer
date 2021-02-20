@@ -13,6 +13,7 @@ class ListAnimator{
     for (i = 0; i < this.items.length; i++) {
       var itemGroup = new Two.Group();
       var rect = two.makeRectangle(0,0,itemSize,itemSize);
+      //rect.translation.set(currentx + itemSize/2 + padding,itemSize/2 + padding);
       rect.fill = 'rgba(100, 100, 120, 1)';
       itemGroup.add(rect);
 
@@ -34,8 +35,7 @@ class ListAnimator{
   }
 
   setItems(items){
-    this.items = items;
-    console.log(items);
+    this.items = Object.values(items)[2];
     this.createList();
     this.draw();
   }
