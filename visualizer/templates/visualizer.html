@@ -1,0 +1,37 @@
+<html>
+<head>
+  {% load static %}
+  <title>Algorithm Visualizer</title>
+
+  <script src="{% static 'two.js' %}"></script>
+  <script src="{% static 'acorn.js' %}"></script>
+  <script src="{% static 'interpreter.js' %}"></script>
+  <script src="{% static 'visualizer.js' %}"></script>
+  <script src="{% static 'list.js' %}"></script>
+
+</head>
+<body>
+  <div id='draw-shapes'></div>
+
+  <div id='code-editor'>
+    <textarea id="code" rows="10" cols="80"></textarea>
+  </div>
+
+  <button onclick='load(document.getElementById("code").value);'>Load</button>
+  <button onclick='execute(document.getElementById("code").value);'>Run</button>
+  <button onclick='step();'>Step</button>
+
+  <select id="algorithms" onchange="changeInputContent();">
+    <option value="Bubble Sort">Bubble Sort</option>
+    <option value="Insertion Sort">Insertion Sort</option>
+    <option value="Selection Sort">Selection Sort</option>
+    <option value="Append">Append</option>
+  </select>
+
+  <script type="text/javascript">
+    var elem = document.getElementById('draw-shapes');
+    var two = new Two({ width: 600, height: 200 }).appendTo(elem);
+
+  </script>
+<body>
+</html>
