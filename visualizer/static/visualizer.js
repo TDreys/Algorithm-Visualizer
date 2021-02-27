@@ -34,23 +34,22 @@ async function execute(code){
     return;
   }
 
-  let callbacks = []
-
   for (let i = 1; i < animationList.length; i++){
 
-    let currentAnimation;
+    //let currentAnimation;
+
+    console.log("awaiting" + i)
 
     switch (animationList[i][0]) {
-      case 'setItems':  currentAnimation = function() {animator.setItems(animationList[i][1])}; break;
-      case 'swap':  currentAnimation = function() {animator.swap(animationList[i][1],animationList[i][2])}; break;
+      case 'setItems':  animator.setItems(animationList[i][1]); break;
+      case 'swap':  await animator.swap(animationList[i][1],animationList[i][2]); break;
       case 'highlight': currentAnimation = function() {animator.highlight(animationList[i][1])}; break;
       case 'append': currentAnimation = function() {animator.append(animationList[i][1])}; break;
     }
 
-    console.log("awaiting" + i)
-    await currentAnimation();
     console.log("awaited" + i)
 
+    console.log(parseInt('a'));
   }
 }
 

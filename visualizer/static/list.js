@@ -48,15 +48,15 @@ class ListAnimator{
   async swap(i,j){
     two.frameCount = 0;
 
-    var iGroup = this.groups[i];
-    var jGroup = this.groups[j];
+    let iGroup = this.groups[i];
+    let jGroup = this.groups[j];
 
-    var radius = (jGroup.translation.x - iGroup.translation.x)/2;
-    var center = [iGroup.translation.x + radius,iGroup.translation.y];
-    var iAngle = 180;
-    var jAngle = 0;
-    var delta = 2;
-    var frames = 180/delta;
+    let radius = (jGroup.translation.x - iGroup.translation.x)/2;
+    let center = [iGroup.translation.x + radius,iGroup.translation.y];
+    let iAngle = 180;
+    let jAngle = 0;
+    let delta = 2;
+    let frames = 180/delta;
 
     function animate(frames,frameCount){
       iGroup.translation.set(center[0]+(Math.cos(degrees_to_radians(iAngle))*radius),
@@ -76,7 +76,7 @@ class ListAnimator{
       animate(frames,i);
     }
 
-    var temp = this.items[i];
+    let temp = this.items[i];
     this.items[i] = this.items[j];
     this.items[j] = temp;
 
@@ -86,12 +86,11 @@ class ListAnimator{
 
     console.log("finished animation");
 
-    return new Promise(function(resolve){resolve();});
   }
 
   swapPromise(i,j){
     console.log("promise")
-    return new Promise(async function(resolve){swap(i,j); resolve();});
+    return new Promise(resolve => {swap(i,j); resolve();});
   }
 
   highlight(index){
