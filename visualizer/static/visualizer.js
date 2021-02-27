@@ -17,9 +17,9 @@ function step(){
   console.log(myInterpreter.step());
 }
 
-function execute(code){
+async function execute(code){
 
-  var animator;
+  let animator;
 
   if(animationList[0][0] == 'type'){
     switch (animationList[0][1]) {
@@ -27,38 +27,41 @@ function execute(code){
       case 'tree':  break;
       case 'graph':  break;
     }
+
   }
   else{
-    console.log("first animation must specify data structure")
+    console.log("first animation must specify data structure");
     return;
   }
 
-  // for(var i = 1; i < animationList.length; i++){
-  //   switch (animationList[i][0]) {
-  //     case 'setItems':  animator.setItems(animationList[i][1]); break;
-  //     case 'swap':  animator.swap(animationList[i][1]); break;
-  //     case 'highlight':  animator.hightlight(animationList[i][1]); break;
-  //     case 'append': animator.append(animationList[i][1]); break;
-  //   }
-  // }
+  let callbacks = []
 
-  for(var i = 1; i < animationList.length; i++){
+  for (let i = 1; i < animationList.length; i++){
+
+    let currentAnimation;
+
     switch (animationList[i][0]) {
-      case 'setItems':  animator.setItems(animationList[i][1]);break;
-      case 'swap':  console.log("swap"); break;
-      //case 'highlight':  console.log("highlight"); break;
-      //case 'append': console.log("append"); break;
+      case 'setItems':  currentAnimation = function() {animator.setItems(animationList[i][1])}; break;
+      case 'swap':  currentAnimation = function() {animator.swap(animationList[i][1],animationList[i][2])}; break;
+      case 'highlight': currentAnimation = function() {animator.highlight(animationList[i][1])}; break;
+      case 'append': currentAnimation = function() {animator.append(animationList[i][1])}; break;
     }
+
+    console.log("awaiting" + i)
+    await currentAnimation();
+    console.log("awaited" + i)
+
   }
 }
 
-function createAnimation(animation,params){
-  if(typeof params == 'object'){
-    animationList.push([animation,Object.values(Object.values(params)[2])]);
+function createAnimation(animation){
+  for(let i = 0;i < animation.length; i++){
+    if(typeof animation[i] == 'object'){
+      animation[i] = Object.values(Object.values(animation[i])[2])
+    }
   }
-  else {
-    animationList.push([animation,params]);
-  }
+
+  animationList.push(animation);
   console.log(animationList);
 }
 
@@ -80,8 +83,8 @@ function initFunc(interpreter, globalObject){
   interpreter.setProperty(consoleWrapper, 'log',interpreter.createNativeFunction(logWrapper));
 
   //createAnimation()
-  var animationWrapper = function(animation,param){
-    createAnimation(animation,param)
+  var animationWrapper = function(){
+    createAnimation(arguments)
   };
   interpreter.setProperty(globalObject,'createAnimation',interpreter.createNativeFunction(animationWrapper));
 

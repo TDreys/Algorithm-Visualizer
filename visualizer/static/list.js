@@ -1,3 +1,7 @@
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 class ListAnimator{
   items = [];
   groups = [];
@@ -35,13 +39,13 @@ class ListAnimator{
 
   setItems(items){
     this.items = items;
-    console.log(items);
     this.createList();
     this.draw();
+
+    return new Promise(() => {});
   }
 
-  swap(i,j){
-    console.log("animate");
+  async swap(i,j){
     two.frameCount = 0;
 
     var iGroup = this.groups[i];
@@ -54,8 +58,7 @@ class ListAnimator{
     var delta = 2;
     var frames = 180/delta;
 
-    animate(frames,function(frameCount) {
-
+    function animate(frames,frameCount){
       iGroup.translation.set(center[0]+(Math.cos(degrees_to_radians(iAngle))*radius),
                             center[1]+Math.sin(degrees_to_radians(iAngle))*radius);
 
@@ -65,7 +68,13 @@ class ListAnimator{
       iAngle -= delta;
       jAngle -= delta;
 
-    })
+      two.update();
+    }
+
+    for (let i = 0; i<=frames; i++){
+      await sleep(15);
+      animate(frames,i);
+    }
 
     var temp = this.items[i];
     this.items[i] = this.items[j];
@@ -75,6 +84,14 @@ class ListAnimator{
     this.groups[i] = this.groups[j];
     this.groups[j] = temp;
 
+    console.log("finished animation");
+
+    return new Promise(function(resolve){resolve();});
+  }
+
+  swapPromise(i,j){
+    console.log("promise")
+    return new Promise(async function(resolve){swap(i,j); resolve();});
   }
 
   highlight(index){
@@ -106,6 +123,8 @@ class ListAnimator{
       }
 
     });
+
+    return new Promise(() => {});
   }
 
   length(){
