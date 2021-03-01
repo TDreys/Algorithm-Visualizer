@@ -7,15 +7,17 @@
   <script src="{% static 'acorn.js' %}"></script>
   <script src="{% static 'interpreter.js' %}"></script>
   <script src="{% static 'visualizer.js' %}"></script>
-  <script src="{% static 'list.js' %}"></script>
+  <script src="{% static 'animators.js' %}"></script>
   <script src="{% static 'util.js' %}"></script>
 
 </head>
 <body>
   <div id='draw-shapes'></div>
 
+  <div id='captions'></div>
+
   <div id='code-editor'>
-    <textarea id="code" rows="10" cols="80"></textarea>
+    <textarea id="code" rows="20" cols="80"></textarea>
   </div>
 
   <button onclick='load(document.getElementById("code").value);'>Load</button>

@@ -17,6 +17,22 @@ function step(){
   console.log(myInterpreter.step());
 }
 
+function caption(name,value){
+  let captionDiv = document.getElementById('captions')
+  let currentCaptions = captionDiv.children
+  let newCaption = document.createElement("P");
+  newCaption.innerText = name + ": " + value;
+
+  for(let i = 0; i <= currentCaptions.length-1; i++){
+    let currentText = currentCaptions[i].innerText;
+    if(currentText.startsWith(name)){
+       captionDiv.replaceChild(newCaption, captionDiv.childNodes[i]);
+       return;
+    }
+  }
+  captionDiv.appendChild(newCaption);
+}
+
 async function execute(code){
 
   let animator;
@@ -35,21 +51,14 @@ async function execute(code){
   }
 
   for (let i = 1; i < animationList.length; i++){
-
-    //let currentAnimation;
-
-    console.log("awaiting" + i)
-
     switch (animationList[i][0]) {
-      case 'setItems':  animator.setItems(animationList[i][1]); break;
+      case 'set items':  await animator.setItems(animationList[i][1]); break;
       case 'swap':  await animator.swap(animationList[i][1],animationList[i][2]); break;
-      case 'highlight': currentAnimation = function() {animator.highlight(animationList[i][1])}; break;
-      case 'append': currentAnimation = function() {animator.append(animationList[i][1])}; break;
+      case 'highlight': await animator.highlight(animationList[i][1],animationList[i][2]); break;
+      case 'remove highlight': await animator.removeHighlight(animationList[i][1]); break;
+      case 'append': await animator.append(animationList[i][1]); break;
+      case 'caption': await caption(animationList[i][1],animationList[i][2]); break;
     }
-
-    console.log("awaited" + i)
-
-    console.log(parseInt('a'));
   }
 }
 
@@ -61,7 +70,6 @@ function createAnimation(animation){
   }
 
   animationList.push(animation);
-  console.log(animationList);
 }
 
 function initFunc(interpreter, globalObject){

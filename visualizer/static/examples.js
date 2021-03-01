@@ -2,19 +2,29 @@
 
 createAnimation('type','list')
 var items = [4,3,2,1];
-createAnimation('setItems',items);
+createAnimation('set items',items);
 var swapped = true;
+var swaps = 0;
+var comparisons = 0;
 
 while(swapped){
   swapped = false;
   for(var i = 0; i < items.length - 1; i++){
+    createAnimation('highlight',[i,i+1],'LightYellow');
+    createAnimation('caption','comparisons',comparisons+=1);
     if(items[i] > items[i+1]){
+      createAnimation('caption','swaps',swaps +=1);
+      createAnimation('highlight',[i,i+1],'LightPink');
       var temp = items[i];
       items[i] = items[i+1];
       items[i+1] = temp;
-      createAnimation('swap',[i,i+1]);
+      createAnimation('swap',i,i+1);
       swapped = true;
     }
+    else{
+      createAnimation('highlight',[i,i+1],'LightGreen');
+    }
+    createAnimation('remove highlight',[i,i+1]);
   }
 }
 
