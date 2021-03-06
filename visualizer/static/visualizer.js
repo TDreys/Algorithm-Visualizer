@@ -1,5 +1,37 @@
 var myInterpreter;
 var animationList = [];
+var two;
+var editor;
+
+function init(){
+  var elem = document.getElementById('draw-shapes');
+  two = new Two({ width: elem.offsetWidth, height: elem.offsetHeight }).appendTo(elem);
+
+  editor = ace.edit("editor");
+  editor.setOptions({
+    fontSize: "12pt",
+    theme: "ace/theme/tomorrow_night",
+    useWorker: false,
+    mode: "ace/mode/javascript",
+    enableLiveAutocompletion: true,
+    showPrintMargin: false,
+  });
+
+  editor.on("guttermousedown", function(e){
+    var target = e.domEvent.target;
+    if (target.className.indexOf("ace_gutter-cell") == -1)
+    return;
+    if (!editor.isFocused())
+    return;
+    if (e.clientX > 25 + target.getBoundingClientRect().left)
+    return;
+
+    var row = e.getDocumentPosition().row
+    e.editor.session.setBreakpoint(row)
+    e.stop()
+    alert(row);
+  })
+}
 
 function load(code){
   myInterpreter = new Interpreter(code,initFunc);
@@ -33,7 +65,7 @@ function caption(name,value){
   captionDiv.appendChild(newCaption);
 }
 
-async function execute(code){
+async function execute(){
 
   let animator;
 
@@ -57,7 +89,10 @@ async function execute(code){
       case 'highlight': await animator.highlight(animationList[i][1],animationList[i][2]); break;
       case 'remove highlight': await animator.removeHighlight(animationList[i][1]); break;
       case 'append': await animator.append(animationList[i][1]); break;
+      case 'insert': await animator.insert(animationList[i][1],animationList[i][2]);break;
+      case 'remove': await animator.remove(animationList[i][1]);break;
       case 'caption': await caption(animationList[i][1],animationList[i][2]); break;
+      case 'marker': await animator.addMarker(animationList[i][1]); break;
     }
   }
 }

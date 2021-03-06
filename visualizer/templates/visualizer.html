@@ -9,6 +9,32 @@
   <script src="{% static 'visualizer.js' %}"></script>
   <script src="{% static 'animators.js' %}"></script>
   <script src="{% static 'util.js' %}"></script>
+  <script src="{% static 'editor/ace.js' %}" type="text/javascript" charset="utf-8"></script>
+  <script src="{% static 'editor/ext-language_tools.js' %}"></script>
+
+  <style type="text/css" media="screen">
+    body{
+      margin: 0px;
+      background-color: #16191B;
+    }
+    #editor {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 53%;
+    }
+    .ace_gutter-cell.ace_breakpoint{
+      border-radius: 20px 0px 0px 20px;
+      background-color: darkslateblue;
+    }
+    #draw-shapes{
+      width:57%;
+      height:50%;
+      border: 1px solid black;
+      margin: 0px;
+    }
+  </style>
 
 </head>
 <body>
@@ -16,12 +42,10 @@
 
   <div id='captions'></div>
 
-  <div id='code-editor'>
-    <textarea id="code" rows="20" cols="80"></textarea>
-  </div>
+  <div id='editor'></div>
 
-  <button onclick='load(document.getElementById("code").value);'>Load</button>
-  <button onclick='execute(document.getElementById("code").value)'>Run</button>
+  <button onclick='load(editor.getValue());'>Load</button>
+  <button onclick='execute()'>Run</button>
   <button onclick='step();'>Step</button>
 
   <select id="algorithms" onchange="changeInputContent();">
@@ -32,9 +56,8 @@
   </select>
 
   <script type="text/javascript">
-    var elem = document.getElementById('draw-shapes');
-    var two = new Two({ width: 600, height: 200 }).appendTo(elem);
-
+    init();
   </script>
+
 <body>
 </html>
