@@ -1,10 +1,62 @@
 var myInterpreter;
 var animationList = [];
+var two;
+var editor;
+
+function init(){
+  var elem = document.getElementById('draw-shapes');
+  two = new Two({ width: elem.offsetWidth, height: elem.offsetHeight }).appendTo(elem);
+
+  editor = ace.edit("editor");
+  editor.setOptions({
+    fontSize: "12pt",
+    theme: "ace/theme/tomorrow_night",
+    useWorker: false,
+    mode: "ace/mode/javascript",
+    enableLiveAutocompletion: true,
+    showPrintMargin: false,
+  });
+
+  editor.on("guttermousedown", function(e){
+    var target = e.domEvent.target;
+    if (target.className.indexOf("ace_gutter-cell") == -1)
+    return;
+    if (!editor.isFocused())
+    return;
+    if (e.clientX > 25 + target.getBoundingClientRect().left)
+    return;
+
+    var breakpoints = e.editor.session.getBreakpoints(row, 0);
+    var row = e.getDocumentPosition().row;
+
+    // If there's a breakpoint already defined, it should be removed, offering the toggle feature
+    if(typeof breakpoints[row] === typeof undefined){
+        e.editor.session.setBreakpoint(row);
+    }else{
+        e.editor.session.clearBreakpoint(row);
+    }
+    e.stop()
+    modal.style.display = "block"
+
+  })
+
+  let modal = document.querySelector(".modal")
+  let closeBtn = document.querySelector(".close-btn")
+
+  closeBtn.onclick = function(){
+  modal.style.display = "none"
+  }
+  window.onclick = function(e){
+    if(e.target == modal){
+      modal.style.display = "none"
+    }
+  }
+}
 
 function load(code){
   myInterpreter = new Interpreter(code,initFunc);
   animationList = [];
-  nextStep();
+  myInterpreter.run();
 }
 
 function nextStep() {
@@ -13,9 +65,29 @@ function nextStep() {
   }
 }
 
-function execute(code){
+function step(){
+  console.log(myInterpreter.step());
+}
 
-  var animator;
+function caption(name,value){
+  let captionDiv = document.getElementById('captions')
+  let currentCaptions = captionDiv.children
+  let newCaption = document.createElement("P");
+  newCaption.innerText = name + ": " + value;
+
+  for(let i = 0; i <= currentCaptions.length-1; i++){
+    let currentText = currentCaptions[i].innerText;
+    if(currentText.startsWith(name)){
+       captionDiv.replaceChild(newCaption, captionDiv.childNodes[i]);
+       return;
+    }
+  }
+  captionDiv.appendChild(newCaption);
+}
+
+async function execute(){
+
+  let animator;
 
   if(animationList[0][0] == 'type'){
     switch (animationList[0][1]) {
@@ -23,37 +95,37 @@ function execute(code){
       case 'tree':  break;
       case 'graph':  break;
     }
+
   }
   else{
-    console.log("first animation must specify data structure")
+    console.log("first animation must specify data structure");
     return;
   }
 
-  // for(var i = 1; i < animationList.length; i++){
-  //   switch (animationList[i][0]) {
-  //     case 'setItems':  animator.setItems(animationList[i][1]); break;
-  //     case 'swap':  animator.swap(animationList[i][1]); break;
-  //     case 'highlight':  animator.hightlight(animationList[i][1]); break;
-  //     case 'append': animator.append(animationList[i][1]); break;
-  //   }
-  // }
-
-  for(var i = 1; i < animationList.length; i++){
+  for (let i = 1; i < animationList.length; i++){
     switch (animationList[i][0]) {
-      case 'setItems':  console.log("setitems"); break;
-      case 'swap':  console.log("swap"); break;
-      case 'highlight':  console.log("highlight"); break;
-      case 'append': console.log("append"); break;
+      case 'set items':  await animator.setItems(animationList[i][1]); break;
+      case 'swap':  await animator.swap(animationList[i][1],animationList[i][2]); break;
+      case 'highlight': await animator.highlight(animationList[i][1],animationList[i][2]); break;
+      case 'remove highlight': await animator.removeHighlight(animationList[i][1]); break;
+      case 'append': await animator.append(animationList[i][1]); break;
+      case 'insert': await animator.insert(animationList[i][1],animationList[i][2]);break;
+      case 'remove': await animator.remove(animationList[i][1]);break;
+      case 'replace': await animator.replace(animationList[i][1],animationList[i][2]);break;
+      case 'caption': await caption(animationList[i][1],animationList[i][2]); break;
+      case 'marker': await animator.addMarker(animationList[i][1]); break;
     }
   }
 }
 
-function step(){
-  console.log("implement");
-}
+function createAnimation(animation){
+  for(let i = 0;i < animation.length; i++){
+    if(typeof animation[i] == 'object'){
+      animation[i] = Object.values(Object.values(animation[i])[2])
+    }
+  }
 
-function createAnimation(animation,params){
-  animationList.push([animation,params]);
+  animationList.push(animation);
 }
 
 function initFunc(interpreter, globalObject){
@@ -74,8 +146,8 @@ function initFunc(interpreter, globalObject){
   interpreter.setProperty(consoleWrapper, 'log',interpreter.createNativeFunction(logWrapper));
 
   //createAnimation()
-  var animationWrapper = function(animation,param){
-    createAnimation(animation,param)
+  var animationWrapper = function(){
+    createAnimation(arguments)
   };
   interpreter.setProperty(globalObject,'createAnimation',interpreter.createNativeFunction(animationWrapper));
 

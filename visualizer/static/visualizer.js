@@ -26,11 +26,59 @@ function init(){
     if (e.clientX > 25 + target.getBoundingClientRect().left)
     return;
 
-    var row = e.getDocumentPosition().row
-    e.editor.session.setBreakpoint(row)
+    var breakpoints = e.editor.session.getBreakpoints(row, 0);
+    var row = e.getDocumentPosition().row;
+
+    // If there's a breakpoint already defined, it should be removed, offering the toggle feature
+    // if(typeof breakpoints[row] === typeof undefined){
+    //     e.editor.session.setBreakpoint(row);
+    // }else{
+    //     e.editor.session.clearBreakpoint(row);
+    // }
     e.stop()
-    alert(row);
+
+    let animationTab = document.getElementById("animationTab");
+    animationTab.click();
+
+    let animationTabContent = document.getElementById("animation");
+    animationTabContent.style.borderColor = "rgba(255,255,255,1)"
+
+    var id = setInterval(frame, 5);
+
+    function frame() {
+      let animationTabContent = document.getElementById("animation");
+      let color = animationTabContent.style.borderColor
+      color = color.substring(color.indexOf('(')+1, color.indexOf(')'));
+      color = color.split(',', 3);
+      let r = parseInt(color[0]) - 1;
+      let g = parseInt(color[1]) - 1;
+      let b = parseInt(color[2]) - 1;
+
+      if (r < 30 || g < 30 || b < 30) {
+        animationTabContent.style.borderColor = "#16191B";
+        clearInterval(id);
+      } else {
+        animationTabContent.style.borderColor = "rgb("+r+","+g+","+b+")"
+      }
+    }
   })
+}
+
+function openTab(evt, tab) {
+  let i, tabcontent, tablinks;
+
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  document.getElementById(tab).style.display = "block";
+  evt.currentTarget.className += " active";
 }
 
 function load(code){
@@ -91,7 +139,8 @@ async function execute(){
       case 'append': await animator.append(animationList[i][1]); break;
       case 'insert': await animator.insert(animationList[i][1],animationList[i][2]);break;
       case 'remove': await animator.remove(animationList[i][1]);break;
-      case 'caption': await caption(animationList[i][1],animationList[i][2]); break;
+      case 'replace': await animator.replace(animationList[i][1],animationList[i][2]);break;
+      case 'caption': await animator.caption(animationList[i][1],animationList[i][2]); break;
       case 'marker': await animator.addMarker(animationList[i][1]); break;
     }
   }

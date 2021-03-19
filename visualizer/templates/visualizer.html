@@ -11,49 +11,50 @@
   <script src="{% static 'util.js' %}"></script>
   <script src="{% static 'editor/ace.js' %}" type="text/javascript" charset="utf-8"></script>
   <script src="{% static 'editor/ext-language_tools.js' %}"></script>
+  <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
 
-  <style type="text/css" media="screen">
-    body{
-      margin: 0px;
-      background-color: #16191B;
-    }
-    #editor {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 53%;
-    }
-    .ace_gutter-cell.ace_breakpoint{
-      border-radius: 20px 0px 0px 20px;
-      background-color: darkslateblue;
-    }
-    #draw-shapes{
-      width:57%;
-      height:50%;
-      border: 1px solid black;
-      margin: 0px;
-    }
-  </style>
 
 </head>
 <body>
-  <div id='draw-shapes'></div>
 
-  <div id='captions'></div>
+  <div id='left'>
+
+    <div id='draw-shapes'></div>
+
+    <div id='captions'></div>
+
+    <div id="control-panel">
+      <div id='controls'>
+        <button class="controlButton" onclick='load(editor.getValue());'>Load</button>
+        <button class="controlButton" onclick='execute()'>Run</button>
+        <button class="controlButton" onclick='step();'>Step</button>
+
+        <select id="algorithms" onchange="changeInputContent();">
+          <option value="Bubble Sort">Bubble Sort</option>
+          <option value="Insertion Sort">Insertion Sort</option>
+          <option value="Selection Sort">Selection Sort</option>
+          <option value="Append">Append</option>
+        </select>
+      </div>
+
+      <div class="tab">
+        <button id="animationTab" class="tablinks" onclick="openTab(event, 'animation')">Animation</button>
+        <button class="tablinks" onclick="openTab(event, 'docs')">Docs</button>
+      </div>
+
+      <div id="animation" class="tabcontent">
+        <h3>Create Animations</h3>
+        <p>create animations here</p>
+      </div>
+
+      <div id="docs" class="tabcontent">
+        <h3>Documentation</h3>
+        <p>Animation functions and how to use them</p>
+      </div>
+    </div>
+  </div>
 
   <div id='editor'></div>
-
-  <button onclick='load(editor.getValue());'>Load</button>
-  <button onclick='execute()'>Run</button>
-  <button onclick='step();'>Step</button>
-
-  <select id="algorithms" onchange="changeInputContent();">
-    <option value="Bubble Sort">Bubble Sort</option>
-    <option value="Insertion Sort">Insertion Sort</option>
-    <option value="Selection Sort">Selection Sort</option>
-    <option value="Append">Append</option>
-  </select>
 
   <script type="text/javascript">
     init();

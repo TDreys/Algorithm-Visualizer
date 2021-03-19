@@ -62,6 +62,7 @@ class ListItem{
 class ListAnimator{
   items = [];
   extraGroups = [];
+  captions = {};
   itemColor = 'DarkGray';
   maxFillRatio = 0.7;
 
@@ -98,7 +99,34 @@ class ListAnimator{
     group.translation.set((two.width/2 - bound.width/2 -20), (two.height/2  -40))
 
     two.add(group);
+    two.add(this.createCaptionGroups())
     two.update();
+  }
+
+  createCaptionGroups(){
+    let group = new Two.Group();
+    let y = 0;
+    for (const [key, value] of Object.entries(this.captions)) {
+      let string = key + ": " + value;
+
+      let text = new Two.Text(string, 0,y);
+      text.size = 15;
+      text.fill = colourNameToHex('white');
+      text.alignment = 'left';
+      let bounds = text.getBoundingClientRect(true);
+
+      y += bounds.height + 5;
+      group.add(text);
+    }
+
+    let bounds = group.getBoundingClientRect(true);
+    group.translation.set(two.width-bounds.width,two.height-bounds.height-20);
+    return group;
+  }
+
+  async caption(name,values){
+    this.captions[name] = values;
+    this.draw();
   }
 
   async setItems(items){
@@ -222,7 +250,7 @@ class ListAnimator{
 
   }
 
-  async insert(item, index){
+  async insert(index, item){
     this.items.splice(index, 0, new ListItem(item));
     this.createListGroups();
     let inserted = this.items[index].group
@@ -268,5 +296,42 @@ class ListAnimator{
     this.draw();
 
     await sleep(1000)
+  }
+
+  async replace(index, newValue){
+    let newItem = new ListItem(newValue);
+    let distance = 50;
+    newItem.createGroup(this.itemColor);
+    let currentItem = this.items[index].group
+    newItem.group.translation.set(currentItem.translation.x,currentItem.translation.y - distance);
+    newItem.group.opacity = 0;
+
+    this.items.push(newItem);
+    this.draw()
+
+
+    let frames = 30;
+    let delta = 1/frames;
+
+    function animate(){
+      currentItem.opacity -= delta;
+      newItem.group.opacity += delta;
+      currentItem.translation.set(currentItem.translation.x,currentItem.translation.y + distance*delta)
+      newItem.group.translation.set(newItem.group.translation.x,newItem.group.translation.y + distance*delta)
+      two.update();
+    }
+
+    for (let i = 0; i<frames; i++){
+      await sleep(15);
+      animate();
+    }
+
+    this.items[index] = newItem;
+    this.items.pop();
+    this.createListGroups();
+    this.draw();
+
+    await sleep(1000)
+
   }
 }
