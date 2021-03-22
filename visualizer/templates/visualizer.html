@@ -29,7 +29,7 @@
         <button class="controlButton" onclick='execute()'>Run</button>
         <button class="controlButton" onclick='step();'>Step</button>
 
-        <select id="algorithms" onchange="changeInputContent();">
+        <select class="controlButton" id="algorithms" onchange="changeInputContent();">
           <option value="Bubble Sort">Bubble Sort</option>
           <option value="Insertion Sort">Insertion Sort</option>
           <option value="Selection Sort">Selection Sort</option>
@@ -38,13 +38,52 @@
       </div>
 
       <div class="tab">
-        <button id="animationTab" class="tablinks" onclick="openTab(event, 'animation')">Animation</button>
+        <button id="animationTab" class="tablinks" onclick="openTab(event, 'animation')">Animations</button>
+        <button id="addAnimationTab" class="tablinks" onclick="openTab(event, 'addAnimation')">Add Animation</button>
         <button class="tablinks" onclick="openTab(event, 'docs')">Docs</button>
       </div>
 
       <div id="animation" class="tabcontent">
-        <h3>Create Animations</h3>
-        <p>create animations here</p>
+        <h3>Animations</h3>
+        <label for="dataStructures">Select visualization type: </label>
+        <select class="controlButton" id="dataStructures" name="dataStructures" onchange="changeAvailableAnimations();">
+          <option value="List">List</option>
+          <option value="Graph/Tree">Graph/Tree</option>
+          <option value="Plot">Plot</option>
+        </select>
+
+        <div id="createdAnimations">
+          <div class="createdAnimation">
+            <p>Animation 1</p>
+            <button class="animationButton" name="button1">Edit: &#9998;</button>
+          </div>
+
+          <div class="createdAnimation">
+            <p>Animation 1</p>
+            <button class="animationButton" name="button1">Edit: &#9998;</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="addAnimation" class="tabcontent">
+        <h3>Create Animation</h3>
+        <div id="animationParams">
+          <label for="lineNumber">Line Number: </label>
+          <input id="lineNumber" type="text" name="lineNumber" value="0">
+
+          <label for="availableAnimations">Animation</label>
+          <select id="selectedAnimation" class="controlButton" id="availableAnimations" name="availableAnimations" onchange="changeSelectedAnimation();">
+            <option value="test">test</option>
+          </select>
+
+          <div id="params">
+
+          </div>
+
+          <label for="hasElse">Inside else statement? </label>
+          <input id="hasElse" type="checkbox" name="hasElse">
+
+        </div>
       </div>
 
       <div id="docs" class="tabcontent">

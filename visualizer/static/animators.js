@@ -65,6 +65,17 @@ class ListAnimator{
   captions = {};
   itemColor = 'DarkGray';
   maxFillRatio = 0.7;
+  static availableAnimations={
+    'set items':{'items':'list of items or variable name'},
+    'swap':{'index 1':'index of first item','index 2':'index of second item'},
+    'highlight':{'index(es)':'the index of an item or list of indices to highlight','color':'css color of the highlight'},
+    'remove highlight':{'index(es)':'the index of an item or list of indices to remove highlights'},
+    'append':{'value':'value to append to the list'},
+    'insert':{'index':'index of the item to be inserted','value':'value of the item inserted'},
+    'remove':{'index':'index of the item to remove'},
+    'replace':{'index':'index of the item to replace','value':'value of the new item'},
+    'caption':{'name':'name of the caption','value':'value of the caption'},
+    'marker':{'index':'add marker to the right of the item at index'}};
 
   createListGroups(){
     let padding = 20;

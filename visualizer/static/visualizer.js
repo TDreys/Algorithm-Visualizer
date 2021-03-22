@@ -1,9 +1,20 @@
 var myInterpreter;
 var animationList = [];
+var createdAnimations = [];
 var two;
 var editor;
 
+class CreatedAnimation{
+  animationName;
+  lineNumber;
+  hasElse;
+  params;
+}
+
 function init(){
+
+  changeAvailableAnimations();
+
   var elem = document.getElementById('draw-shapes');
   two = new Two({ width: elem.offsetWidth, height: elem.offsetHeight }).appendTo(elem);
 
@@ -29,24 +40,24 @@ function init(){
     var breakpoints = e.editor.session.getBreakpoints(row, 0);
     var row = e.getDocumentPosition().row;
 
-    // If there's a breakpoint already defined, it should be removed, offering the toggle feature
-    // if(typeof breakpoints[row] === typeof undefined){
-    //     e.editor.session.setBreakpoint(row);
-    // }else{
-    //     e.editor.session.clearBreakpoint(row);
-    // }
+    //If there's a breakpoint already defined, it should be removed, offering the toggle feature
+    if(typeof breakpoints[row] === typeof undefined){
+        e.editor.session.setBreakpoint(row);
+    }else{
+        e.editor.session.clearBreakpoint(row);
+    }
     e.stop()
 
-    let animationTab = document.getElementById("animationTab");
+    let animationTab = document.getElementById("addAnimationTab");
     animationTab.click();
 
-    let animationTabContent = document.getElementById("animation");
+    let animationTabContent = document.getElementById("addAnimation");
     animationTabContent.style.borderColor = "rgba(255,255,255,1)"
 
     var id = setInterval(frame, 5);
 
     function frame() {
-      let animationTabContent = document.getElementById("animation");
+      let animationTabContent = document.getElementById("addAnimation");
       let color = animationTabContent.style.borderColor
       color = color.substring(color.indexOf('(')+1, color.indexOf(')'));
       color = color.split(',', 3);
@@ -62,6 +73,70 @@ function init(){
       }
     }
   })
+
+  //add event for newline and update animation line numbers
+
+  //add tooltips for animation labels
+
+  //update changeInputContent
+}
+
+function changeAvailableAnimations(){
+  let selectedAnimator = document.getElementById('dataStructures').value;
+  let availableAnimations = [];
+  if (selectedAnimator == 'List'){
+    availableAnimations = Object.keys(ListAnimator.availableAnimations);
+  }
+
+  let innerString = '';
+  availableAnimations.forEach((item) => {
+    innerString += '<option>' + item + '</option>'
+  });
+
+  document.getElementById('selectedAnimation').innerHTML = innerString;
+
+}
+
+function changeSelectedAnimation(){
+  let paramDiv = document.getElementById('params');
+  paramDiv.innerHTML = '';
+  let selectedAnimation = document.getElementById('selectedAnimation').value;
+  let selectedAnimator = document.getElementById('dataStructures').value;
+  let params;
+
+  if (selectedAnimator == 'List'){
+    params = ListAnimator.availableAnimations[selectedAnimation];
+  }
+
+  keys = Object.keys(params);
+
+  keys.forEach((item,i) => {
+    let itemName = 'param'+i
+    let description = params[item];
+
+    let newlabel = document.createElement('label')
+    newlabel.setAttribute('for',itemName);
+    newlabel.innerHTML = item + ": ";
+    let newinput = document.createElement('input')
+    newinput.setAttribute('class','param');
+    newinput.setAttribute('type','text');
+    newinput.setAttribute('name',itemName);
+    newinput.setAttribute('id',itemName);
+
+    paramDiv.appendChild(newlabel);
+    paramDiv.appendChild(newinput)
+
+  });
+
+}
+
+function addAnimation(){
+  let newAnimation = new CreatedAnimation();
+  let lineNumber = document.getElementById("lineNumber").value;
+  let selectedAnimation = document.getElementById("selectedAnimation").value;
+
+  //finish this
+
 }
 
 function openTab(evt, tab) {
@@ -97,22 +172,6 @@ function step(){
   console.log(myInterpreter.step());
 }
 
-function caption(name,value){
-  let captionDiv = document.getElementById('captions')
-  let currentCaptions = captionDiv.children
-  let newCaption = document.createElement("P");
-  newCaption.innerText = name + ": " + value;
-
-  for(let i = 0; i <= currentCaptions.length-1; i++){
-    let currentText = currentCaptions[i].innerText;
-    if(currentText.startsWith(name)){
-       captionDiv.replaceChild(newCaption, captionDiv.childNodes[i]);
-       return;
-    }
-  }
-  captionDiv.appendChild(newCaption);
-}
-
 async function execute(){
 
   let animator;
@@ -142,6 +201,7 @@ async function execute(){
       case 'replace': await animator.replace(animationList[i][1],animationList[i][2]);break;
       case 'caption': await animator.caption(animationList[i][1],animationList[i][2]); break;
       case 'marker': await animator.addMarker(animationList[i][1]); break;
+      //add remove marker
     }
   }
 }
