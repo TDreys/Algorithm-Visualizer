@@ -1,12 +1,11 @@
 var myInterpreter;
 var animationList = [];
-var createdAnimations = [];
+var createdAnimations = {};
 var two;
 var editor;
 
 class CreatedAnimation{
   animationName;
-  lineNumber;
   hasElse;
   params;
 }
@@ -14,6 +13,7 @@ class CreatedAnimation{
 function init(){
 
   changeAvailableAnimations();
+  changeSelectedAnimation();
 
   var elem = document.getElementById('draw-shapes');
   two = new Two({ width: elem.offsetWidth, height: elem.offsetHeight }).appendTo(elem);
@@ -54,6 +54,8 @@ function init(){
     let animationTabContent = document.getElementById("addAnimation");
     animationTabContent.style.borderColor = "rgba(255,255,255,1)"
 
+    document.getElementById("lineNumber").value = row + 1;
+
     var id = setInterval(frame, 5);
 
     function frame() {
@@ -74,6 +76,7 @@ function init(){
     }
   })
 
+  //add breakpoint for existing animations not when clicked
   //add event for newline and update animation line numbers
 
   //add tooltips for animation labels
@@ -81,10 +84,67 @@ function init(){
   //update changeInputContent
 }
 
+function addAnimationsToCode(){
+  let code = ''
+
+  let type = document.getElementById('dataStructures').value;
+  code += 'createAnimation(\'type\',\''+ type +'\');'
+
+  for(let i = 0; i < editor.session.getLength(); i++){
+    code += editor.session.getLine(i);
+    let lineAnimations = createdAnimations[i+1];
+    if(lineAnimations != undefined){
+      lineAnimations.forEach((item) => {
+        let paramString = ''
+        item.params.forEach((item) => {
+          paramString += ','+item;
+        });
+
+        let animationFunction = 'createAnimation(\'' + item.animationName+ '\'' + paramString + ');'
+        code += animationFunction;
+      });
+    }
+    code += '\n'
+  }
+
+  return code;
+
+}
+
+function updateAddedAnimations(){
+  let createdAnimationsDiv = document.getElementById('createdAnimations')
+  createdAnimationsDiv.innerHTML = '';
+
+  let lines = Object.keys(createdAnimations);
+  lines.forEach((item) => {
+
+    lineAnimations = createdAnimations[item];
+
+    lineAnimations.forEach((animation) => {
+      let newDiv = document.createElement('div');
+      newDiv.setAttribute('class','createdAnimation');
+
+      let newP = document.createElement('p')
+      let pContent = 'Animation: ' + animation.animationName + ' - Line: ' + item;
+      newP.innerHTML = pContent;
+
+      let newButton = document.createElement('button')
+      newButton.setAttribute('class','animationButton');
+      newButton.innerHTML = 'Edit: &#9998;';
+
+      newDiv.appendChild(newP);
+      newDiv.appendChild(newButton);
+
+      createdAnimationsDiv.appendChild(newDiv);
+    });
+  });
+
+}
+
 function changeAvailableAnimations(){
   let selectedAnimator = document.getElementById('dataStructures').value;
   let availableAnimations = [];
-  if (selectedAnimator == 'List'){
+  if (selectedAnimator == 'list'){
     availableAnimations = Object.keys(ListAnimator.availableAnimations);
   }
 
@@ -104,7 +164,7 @@ function changeSelectedAnimation(){
   let selectedAnimator = document.getElementById('dataStructures').value;
   let params;
 
-  if (selectedAnimator == 'List'){
+  if (selectedAnimator == 'list'){
     params = ListAnimator.availableAnimations[selectedAnimation];
   }
 
@@ -134,9 +194,26 @@ function addAnimation(){
   let newAnimation = new CreatedAnimation();
   let lineNumber = document.getElementById("lineNumber").value;
   let selectedAnimation = document.getElementById("selectedAnimation").value;
+  newAnimation.animationName = selectedAnimation;
+  newAnimation.hasElse = document.getElementById('hasElse').checked;
+  let paramCount = Object.keys(ListAnimator.availableAnimations[selectedAnimation]).length;
+  let params = [];
 
-  //finish this
+  for(let i = 0; i<paramCount;i++){
+    params.push(document.getElementById('param'+i).value)
+  }
 
+  newAnimation.params = params;
+
+  if(createdAnimations[lineNumber] == undefined){
+    createdAnimations[lineNumber] = [];
+  }
+  createdAnimations[lineNumber].push(newAnimation);
+
+  let animationTab = document.getElementById("animationTab");
+  animationTab.click();
+
+  updateAddedAnimations();
 }
 
 function openTab(evt, tab) {
@@ -156,7 +233,9 @@ function openTab(evt, tab) {
   evt.currentTarget.className += " active";
 }
 
-function load(code){
+function load(){
+  let code = addAnimationsToCode();
+  console.log(code);
   myInterpreter = new Interpreter(code,initFunc);
   animationList = [];
   myInterpreter.run();

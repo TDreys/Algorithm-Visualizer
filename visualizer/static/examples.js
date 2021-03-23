@@ -65,3 +65,9 @@ for(var i = 0; i < list.length(); i++){
 for(var i = 0; i < 5; i++){
    list.append(i)
 }
+
+//set items example
+var items = [4,3,2,1];
+var temp = items[1];
+items[1] = items[2];
+items[2] = temp;
