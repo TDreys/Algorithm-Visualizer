@@ -3,6 +3,15 @@ var animationList = [];
 var createdAnimations = {};
 var two;
 var editor;
+var running = false;
+var premade = {
+  1:{name:'Bubble Sort',serialized:''},
+  2:{name:'Selection Sort',serialized:''},
+  3:{name:'Insertion Sort',serialized:''}
+};
+var usermade = {
+  1:{name:'Test',serialized:''}
+};
 
 class CreatedAnimation{
   animationName;
@@ -10,10 +19,19 @@ class CreatedAnimation{
   params;
 }
 
+class Demonstration{
+  code;
+  animations;
+  type;
+  name;
+}
+
 function init(){
 
   changeAvailableAnimations();
   changeSelectedAnimation();
+  updateDemonstrations();
+  updateLoaded(false);
 
   var elem = document.getElementById('draw-shapes');
   two = new Two({ width: elem.offsetWidth, height: elem.offsetHeight }).appendTo(elem);
@@ -32,20 +50,10 @@ function init(){
     var target = e.domEvent.target;
     if (target.className.indexOf("ace_gutter-cell") == -1)
     return;
-    if (!editor.isFocused())
-    return;
     if (e.clientX > 25 + target.getBoundingClientRect().left)
     return;
 
-    var breakpoints = e.editor.session.getBreakpoints(row, 0);
     var row = e.getDocumentPosition().row;
-
-    //If there's a breakpoint already defined, it should be removed, offering the toggle feature
-    if(typeof breakpoints[row] === typeof undefined){
-        e.editor.session.setBreakpoint(row);
-    }else{
-        e.editor.session.clearBreakpoint(row);
-    }
     e.stop()
 
     let animationTab = document.getElementById("addAnimationTab");
@@ -76,12 +84,111 @@ function init(){
     }
   })
 
-  //add breakpoint for existing animations not when clicked
-  //add event for newline and update animation line numbers
-
   //add tooltips for animation labels
 
-  //update changeInputContent
+  //finish demonstration lodaing and making idk
+
+  //add login and saving
+
+  //add else statement thing
+}
+
+function updateRunning(){
+  if(running){
+    let run = document.getElementById('runButton');
+    run.disabled = false;
+    run.innerHTML = 'Reset'
+    document.getElementById('stepButton').disabled = true;
+    document.getElementById('loadButton').disabled = true;
+
+  }
+  else{
+    let run = document.getElementById('runButton');
+    run.innerHTML = 'Run'
+    run.disabled = false;
+    document.getElementById('stepButton').disabled = false;
+    document.getElementById('loadButton').disabled = false;
+  }
+}
+
+function updateLoaded(loaded){
+  if(loaded){
+    let run = document.getElementById('runButton');
+    run.disabled = false;
+    run.innerHTML = 'Run'
+    document.getElementById('stepButton').disabled = false;
+    document.getElementById('loadButton').disabled = false;
+
+  }
+  else{
+    let run = document.getElementById('runButton');
+    run.disabled = true;
+    run.innerHTML = 'Run'
+    document.getElementById('stepButton').disabled = true;
+    document.getElementById('loadButton').disabled = false;
+  }
+}
+
+function updateDemonstrations(){
+  let premadeKeys = Object.keys(premade);
+
+  premadeKeys.forEach((item, i) => {
+    let premadeDiv = document.getElementById('premade');
+
+    let button = document.createElement('button')
+    button.setAttribute('class','demoButton')
+    button.setAttribute('onclick','loadDemonstration('+ premade[item].serialized +')')
+    button.innerHTML = premade[item].name;
+
+    premadeDiv.appendChild(button);
+  });
+
+  let usermadeKeys = Object.keys(usermade);
+
+  usermadeKeys.forEach((item, i) => {
+    let usermadeDiv = document.getElementById('usermade');
+
+    let button = document.createElement('button')
+    button.setAttribute('class','demoButton')
+    button.setAttribute('onclick','loadDemonstration('+ usermade[item].serialized +')')
+    button.innerHTML = usermade[item].name;
+
+    usermadeDiv.appendChild(button);
+  });
+
+}
+
+function saveDemonstration(){
+  let demo = new Demonstration();
+  demo.code = editor.session.getValue();
+  demo.animations = createdAnimations;
+  demo.type = document.getElementById('dataStructures').value;
+  demo.name = 'test';
+
+  let serialized = JSON.stringify(demo);
+
+  console.log(serialized);
+}
+
+function loadDemonstration(serialized){
+  console.log(typeof serialized);
+  createdAnimations = serialized.animations;
+  editor.session.setValue(serialized.code);
+  document.getElementById('dataStructures').value = serialized.type;
+
+  updateBreakpoints();
+  updateAddedAnimations();
+}
+
+function updateBreakpoints(){
+  editor.session.clearBreakpoints();
+
+  let keys = Object.keys(createdAnimations);
+
+  keys.forEach((item, i) => {
+    editor.session.setBreakpoint(parseInt(item) - 1);
+  });
+
 }
 
 function addAnimationsToCode(){
@@ -120,7 +227,7 @@ function updateAddedAnimations(){
 
     lineAnimations = createdAnimations[item];
 
-    lineAnimations.forEach((animation) => {
+    lineAnimations.forEach((animation,i) => {
       let newDiv = document.createElement('div');
       newDiv.setAttribute('class','createdAnimation');
 
@@ -130,7 +237,8 @@ function updateAddedAnimations(){
 
       let newButton = document.createElement('button')
       newButton.setAttribute('class','animationButton');
-      newButton.innerHTML = 'Edit: &#9998;';
+      newButton.setAttribute('onclick','removeAnimation('+item+','+i+')');
+      newButton.innerHTML = '&#10006;';
 
       newDiv.appendChild(newP);
       newDiv.appendChild(newButton);
@@ -178,7 +286,7 @@ function changeSelectedAnimation(){
     newlabel.setAttribute('for',itemName);
     newlabel.innerHTML = item + ": ";
     let newinput = document.createElement('input')
-    newinput.setAttribute('class','param');
+    newinput.setAttribute('class','textInput');
     newinput.setAttribute('type','text');
     newinput.setAttribute('name',itemName);
     newinput.setAttribute('id',itemName);
@@ -214,6 +322,17 @@ function addAnimation(){
   animationTab.click();
 
   updateAddedAnimations();
+  updateBreakpoints();
+}
+
+function removeAnimation(line,index){
+  createdAnimations[line].splice(index,1);
+  console.log(createdAnimations[line])
+  if(createdAnimations[line].length == 0){
+    delete createdAnimations[line];
+  }
+  updateAddedAnimations();
+  updateBreakpoints();
 }
 
 function openTab(evt, tab) {
@@ -235,10 +354,10 @@ function openTab(evt, tab) {
 
 function load(){
   let code = addAnimationsToCode();
-  console.log(code);
   myInterpreter = new Interpreter(code,initFunc);
   animationList = [];
   myInterpreter.run();
+  updateLoaded(true);
 }
 
 function nextStep() {
@@ -253,7 +372,14 @@ function step(){
 
 async function execute(){
 
+  updateRunning();
+  if(!running){
+    return;
+  }
+
   let animator;
+  two.clear();
+  two.update();
 
   if(animationList[0][0] == 'type'){
     switch (animationList[0][1]) {
@@ -282,7 +408,15 @@ async function execute(){
       case 'marker': await animator.addMarker(animationList[i][1]); break;
       //add remove marker
     }
+
+    if(!running){
+      updateRunning();
+      return;
+    }
   }
+
+  running = false;
+  updateRunning();
 }
 
 function createAnimation(animation){

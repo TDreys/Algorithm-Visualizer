@@ -25,21 +25,15 @@
 
     <div id="control-panel">
       <div id='controls'>
-        <button class="controlButton" onclick='load();'>Load</button>
-        <button class="controlButton" onclick='execute()'>Run</button>
-        <button class="controlButton" onclick='step();'>Step</button>
-
-        <select class="controlButton" id="algorithms" onchange="changeInputContent();">
-          <option value="Bubble Sort">Bubble Sort</option>
-          <option value="Insertion Sort">Insertion Sort</option>
-          <option value="Selection Sort">Selection Sort</option>
-          <option value="Append">Append</option>
-        </select>
+        <button id="loadButton" class="controlButton" onclick='load();'>Load</button>
+        <button id="runButton" class="controlButton" onclick='running = !running;execute();'>Run</button>
+        <button id="stepButton" class="controlButton" onclick='step();'>Step</button>
       </div>
 
       <div class="tab">
         <button id="animationTab" class="tablinks" onclick="openTab(event, 'animation')">Animations</button>
         <button id="addAnimationTab" class="tablinks" onclick="openTab(event, 'addAnimation')">Add Animation</button>
+        <button id="demoSelectorTab" class="tablinks" onclick="openTab(event, 'demoSelector')">Demonstrations</button>
         <button class="tablinks" onclick="openTab(event, 'docs')">Docs</button>
       </div>
 
@@ -51,6 +45,7 @@
           <option value="graph">Graph/Tree</option>
           <option value="plot">Plot</option>
         </select>
+        <button id="saveDemoButton" class="controlButton" name="saveButton" onclick="saveDemonstration();">Save Demonstration</button>
 
         <div id="createdAnimations">
 
@@ -61,9 +56,9 @@
         <h3>Create Animation</h3>
         <div id="animationParams">
           <label for="lineNumber">Line Number: </label>
-          <input id="lineNumber" type="text" name="lineNumber" value="1">
+          <input id="lineNumber" type="number" name="lineNumber" value="1" class="textInput">
 
-          <label for="availableAnimations">Animation</label>
+          <label for="availableAnimations">Animation: </label>
           <select id="selectedAnimation" class="controlButton" id="availableAnimations" name="availableAnimations" onchange="changeSelectedAnimation();">
             <option value="test">test</option>
           </select>
@@ -75,7 +70,7 @@
           <label for="hasElse">Inside else statement? </label>
           <input id="hasElse" type="checkbox" name="hasElse">
 
-          <button type="addAnimationButton" name="addAnimationButton" onclick="addAnimation();">
+          <button type="addAnimationButton" name="addAnimationButton" onclick="addAnimation();" class="controlButton">
             Add
           </button>
 
@@ -85,6 +80,18 @@
       <div id="docs" class="tabcontent">
         <h3>Documentation</h3>
         <p>Animation functions and how to use them</p>
+      </div>
+
+      <div id="demoSelector" class="tabcontent">
+        <h3>Demonstrations</h3>
+        <p>Select pre made demonstration</p>
+        <div id="demos">
+          <div id="premade" class="demoButtons">
+          </div>
+
+          <div id="usermade" class="demoButtons">
+          </div>
+        </div>
       </div>
     </div>
   </div>
