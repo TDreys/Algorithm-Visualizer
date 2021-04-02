@@ -36,6 +36,19 @@ function init(){
   var elem = document.getElementById('draw-shapes');
   two = new Two({ width: elem.offsetWidth, height: elem.offsetHeight }).appendTo(elem);
 
+  functionPlot({
+    target: '#draw-shapes',
+    width: elem.offsetWidth*0.6,
+    height: elem.offsetHeight*0.95,
+    disableZoom: false,
+    grid:true,
+    data: [{
+      fnType: 'points',
+      graphType: 'scatter',
+      points: [[1,2],[1,1],[3,2]],
+    }]
+  })
+
   editor = ace.edit("editor");
   editor.setOptions({
     fontSize: "12pt",
@@ -91,6 +104,10 @@ function init(){
   //add login and saving
 
   //add else statement thing
+
+  //graphs
+
+  //plotting
 }
 
 function updateRunning(){

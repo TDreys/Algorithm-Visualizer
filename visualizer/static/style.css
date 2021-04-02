@@ -25,6 +25,7 @@ body{
 }
 #left{
   width:53%;
+  max-height: 100%;
 }
 
 #controls{
@@ -191,4 +192,29 @@ body{
 
 #hasElse{
   margin-right: 50px;
+}
+
+.canvas{
+  color: white;
+}
+
+.canvas .content .y.origin{
+  stroke:white;
+  fill:white;
+  opacity: 0.5;
+}
+
+.canvas .content .x.origin{
+  stroke:white;
+  fill:white;
+  opacity: 0.5;
+}
+
+.canvas .y.axis .tick line{
+  stroke:grey;
+  fill:white;
+}
+.canvas .x.axis .tick line{
+  stroke:grey;
+  fill:white;
 }

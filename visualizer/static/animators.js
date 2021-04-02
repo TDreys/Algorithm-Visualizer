@@ -346,3 +346,33 @@ class ListAnimator{
 
   }
 }
+
+
+class PlottingAnimator{
+  scale = 1;
+
+  testPlot(){
+    functionPlot({
+      target: '#draw-shapes',
+      disableZoom: true,
+      data: [{
+        fn: 'gamma(x)',
+        sampler: 'builtIn',
+        graphType: 'polyline'
+      }]
+    })
+    functionPlot({
+      target: '#draw-shapes',
+      data: [{
+        fn: 'tan(x)',
+        nSamples: 4000,
+        sampler: 'builtIn',
+        graphType: 'polyline'
+      }]
+    })
+  }
+}
+
+class GraphAnimator{
+
+}
