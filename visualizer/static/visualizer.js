@@ -33,22 +33,6 @@ function init(){
   updateDemonstrations();
   updateLoaded(false);
 
-  var elem = document.getElementById('draw-shapes');
-  two = new Two({ width: elem.offsetWidth, height: elem.offsetHeight }).appendTo(elem);
-
-  functionPlot({
-    target: '#draw-shapes',
-    width: elem.offsetWidth*0.6,
-    height: elem.offsetHeight*0.95,
-    disableZoom: false,
-    grid:true,
-    data: [{
-      fnType: 'points',
-      graphType: 'scatter',
-      points: [[1,2],[1,1],[3,2]],
-    }]
-  })
-
   editor = ace.edit("editor");
   editor.setOptions({
     fontSize: "12pt",
@@ -107,7 +91,9 @@ function init(){
 
   //graphs
 
-  //plotting
+  //plotting add variable name thing
+
+  //plot single point x evaluation
 }
 
 function updateRunning(){
@@ -272,6 +258,9 @@ function changeAvailableAnimations(){
   if (selectedAnimator == 'list'){
     availableAnimations = Object.keys(ListAnimator.availableAnimations);
   }
+  else if (selectedAnimator == 'plot') {
+    availableAnimations = Object.keys(PlottingAnimator.availableAnimations);
+  }
 
   let innerString = '';
   availableAnimations.forEach((item) => {
@@ -279,6 +268,8 @@ function changeAvailableAnimations(){
   });
 
   document.getElementById('selectedAnimation').innerHTML = innerString;
+
+  changeSelectedAnimation();
 
 }
 
@@ -291,6 +282,9 @@ function changeSelectedAnimation(){
 
   if (selectedAnimator == 'list'){
     params = ListAnimator.availableAnimations[selectedAnimation];
+  }
+  else if (selectedAnimator == 'plot') {
+    params = PlottingAnimator.availableAnimations[selectedAnimation];
   }
 
   keys = Object.keys(params);
@@ -321,7 +315,16 @@ function addAnimation(){
   let selectedAnimation = document.getElementById("selectedAnimation").value;
   newAnimation.animationName = selectedAnimation;
   newAnimation.hasElse = document.getElementById('hasElse').checked;
-  let paramCount = Object.keys(ListAnimator.availableAnimations[selectedAnimation]).length;
+  let selectedAnimator = document.getElementById('dataStructures').value;
+  let paramCount;
+
+  if (selectedAnimator == 'list'){
+    paramCount = Object.keys(ListAnimator.availableAnimations[selectedAnimation]).length;
+  }
+  else if (selectedAnimator == 'plot') {
+    paramCount = Object.keys(PlottingAnimator.availableAnimations[selectedAnimation]).length;
+  }
+
   let params = [];
 
   for(let i = 0; i<paramCount;i++){
@@ -370,6 +373,15 @@ function openTab(evt, tab) {
 }
 
 function load(){
+  let selectedAnimator = document.getElementById('dataStructures').value;
+  var elem = document.getElementById('draw-shapes');
+  elem.innerHTML = '';
+
+  if(selectedAnimator == 'list' || selectedAnimator == 'graph'){
+    var elem = document.getElementById('draw-shapes');
+    two = new Two({ width: elem.offsetWidth, height: elem.offsetHeight }).appendTo(elem);
+  }
+
   let code = addAnimationsToCode();
   myInterpreter = new Interpreter(code,initFunc);
   animationList = [];
@@ -395,16 +407,13 @@ async function execute(){
   }
 
   let animator;
-  two.clear();
-  two.update();
 
   if(animationList[0][0] == 'type'){
     switch (animationList[0][1]) {
       case 'list': animator = new ListAnimator(); break;
-      case 'tree':  break;
+      case 'plot':  animator = new PlottingAnimator(); break;
       case 'graph':  break;
     }
-
   }
   else{
     console.log("first animation must specify data structure");
@@ -423,7 +432,9 @@ async function execute(){
       case 'replace': await animator.replace(animationList[i][1],animationList[i][2]);break;
       case 'caption': await animator.caption(animationList[i][1],animationList[i][2]); break;
       case 'marker': await animator.addMarker(animationList[i][1]); break;
-      //add remove marker
+      case 'plot function': await animator.plotFunction(animationList[i][1]); break;
+      case 'plot points': await animator.plotPoints(animationList[i][1]); break;
+      case 'clear plot': await animator.clearPlot(); break;
     }
 
     if(!running){

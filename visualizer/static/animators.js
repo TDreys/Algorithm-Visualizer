@@ -349,27 +349,45 @@ class ListAnimator{
 
 
 class PlottingAnimator{
-  scale = 1;
 
-  testPlot(){
+  currentPlots = [];
+
+  static availableAnimations={
+    'plot function':{'function string':'function to plot'},
+    'plot points':{'points':'2d list of x,y points'}};
+
+  drawPlots(){
+    let elem = document.getElementById('draw-shapes');
+    elem.innerHTML = '';
     functionPlot({
       target: '#draw-shapes',
-      disableZoom: true,
-      data: [{
-        fn: 'gamma(x)',
-        sampler: 'builtIn',
-        graphType: 'polyline'
-      }]
+      width: elem.offsetWidth*0.6,
+      height: elem.offsetHeight,
+      disableZoom: false,
+      grid:true,
+      data:this.currentPlots,
     })
-    functionPlot({
-      target: '#draw-shapes',
-      data: [{
-        fn: 'tan(x)',
-        nSamples: 4000,
-        sampler: 'builtIn',
-        graphType: 'polyline'
-      }]
-    })
+
+  }
+
+  async plotFunction(functionString){
+    this.currentPlots.push({fn:functionString})
+    this.drawPlots();
+    await sleep(200);
+  }
+
+  async plotPoints(pointsList){
+    this.currentPlots.push({
+        fnType: 'points',
+        graphType: 'scatter',
+        points: pointsList,
+      })
+    this.drawPlots();
+  }
+
+  async clearPlot(){
+    this.currentPlots = [];
+    this.drawPlots();
   }
 }
 
