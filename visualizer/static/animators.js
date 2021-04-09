@@ -350,34 +350,40 @@ class ListAnimator{
 
 class PlottingAnimator{
 
-  currentPlots = [];
+  options = {
+    target: '#draw-shapes',
+    width: document.getElementById('draw-shapes').offsetWidth*0.6,
+    height: document.getElementById('draw-shapes').offsetHeight,
+    grid:true,
+    data:[],
+  }
 
   static availableAnimations={
     'plot function':{'function string':'function to plot'},
-    'plot points':{'points':'2d list of x,y points'}};
+    'plot points':{'points':'2d list of x,y points'},
+    'clear plot':{},
+    'evaluate':{'function string':'function to evaluate','x value':'x value to evaluate'}
+  };
 
   drawPlots(){
-    let elem = document.getElementById('draw-shapes');
-    elem.innerHTML = '';
-    functionPlot({
-      target: '#draw-shapes',
-      width: elem.offsetWidth*0.6,
-      height: elem.offsetHeight,
-      disableZoom: false,
-      grid:true,
-      data:this.currentPlots,
-    })
-
+    functionPlot(this.options)
   }
 
   async plotFunction(functionString){
-    this.currentPlots.push({fn:functionString})
+    this.options.data.push({fn:functionString})
     this.drawPlots();
-    await sleep(200);
+    await sleep(100);
   }
 
   async plotPoints(pointsList){
-    this.currentPlots.push({
+
+    if (!Array.isArray(pointsList[0])) {
+      pointsList.forEach((item, i) => {
+        pointsList[i] = Object.values(item.properties)
+      });
+    }
+
+    this.options.data.push({
         fnType: 'points',
         graphType: 'scatter',
         points: pointsList,
@@ -386,11 +392,265 @@ class PlottingAnimator{
   }
 
   async clearPlot(){
-    this.currentPlots = [];
+    this.options.data = []
+    document.getElementById('draw-shapes').innerHTML = '';
     this.drawPlots();
+  }
+
+  async evaluateFunction(functionString,xCoord){
+    let datum = {fn:functionString};
+    let scope = {x:xCoord}
+    let y = functionPlot.$eval.builtIn(datum, 'fn', scope)
+    let point = [[xCoord,y]]
+
+    await this.plotPoints(point);
+  }
+
+  async twoPointLine(x1,y1,x2,y2){
+
   }
 }
 
 class GraphAnimator{
 
+  graph = new Springy.Graph();
+  nodes = [];
+  edges = [];
+  transitions = [];
+  layout;
+  maxFillRatio = 0.7;
+  static availableAnimations={
+    'set graph':{'graph':'graph to display'},
+  };
+
+  testmake(){
+    let newGraph = new Springy.Graph();
+    var spruce = newGraph.newNode({label: 'Norway Spruce'});
+    var fir = newGraph.newNode({label: 'Sicilian Fir'});
+
+    // connect them with an edge
+    newGraph.newEdge(spruce, fir,3);
+
+    return newGraph;
+  }
+
+  generateFromAdjecencyMatrix(data){
+    return this.testmake();
+  }
+
+  generateFromAdjecencyArray(data){
+    let newGraph = new Springy.Graph();
+    let nodes = []
+
+    //create nodes
+    data.forEach((item, i) => {
+      nodes.push(newGraph.newNode())
+    });
+
+    data.forEach((connections, i) => {
+      connections.forEach((item, j) => {
+        newGraph.newEdge(nodes[i],nodes[item]);
+      });
+    });
+
+    return newGraph;
+  }
+
+  generateFromIncidenceMatrix(data){
+    return this.testmake();
+  }
+
+  calculateLayout(){
+    this.layout = new Springy.Layout.ForceDirected(
+      this.graph,
+      300.0, // Spring stiffness
+      500.0, // Node repulsion
+      0.7 // Damping
+    );
+
+    for(let i = 0; i< 2000; i++){
+      this.layout.tick(0.03);
+    }
+
+    let edgesTemp = [];
+    this.layout.eachEdge(function(edge,spring){
+      let p1 = spring.point1.p;
+      let p2 = spring.point2.p;
+      let line = two.makeLine(p1.x*50,p1.y*50,p2.x*50,p2.y*50);
+      line.stroke = colourNameToHex('white');
+      edgesTemp.push({group:line,start:edge.source.id,end:edge.target.id});
+    })
+    this.edges = edgesTemp;
+
+    let nodesTemp = [];
+    this.layout.eachNode(function(node,point){
+      let group = new Two.Group();
+      let circle = two.makeCircle(0,0,20);
+      circle.fill = colourNameToHex('darkgray');
+      group.add(circle);
+      let text = new Two.Text(node.id, 0,0);
+      text.size = 18;
+      group.add(text);
+      group.translation.set(point.p.x*50,point.p.y*50)
+      nodesTemp.push(group);
+    })
+    this.nodes = nodesTemp;
+  }
+
+  draw(){
+    two.clear();
+    let group = new Two.Group();
+
+    this.edges.forEach((item) => {
+      group.add(item.group);
+    });
+    this.nodes.forEach((item) => {
+      group.add(item);
+    });
+    this.transitions.forEach((item, i) => {
+      group.add(item);
+    });
+
+
+    let bound = group.getBoundingClientRect(false);
+
+    let widthScale = 1/(bound.width/(two.width*this.maxFillRatio))
+    let heightScale = 1/(bound.height/(two.height*this.maxFillRatio))
+    group.scale = Math.min(widthScale,heightScale);
+
+    bound = group.getBoundingClientRect(false);
+    group.translation.set(two.width/2, two.height/2)
+
+    two.add(group);
+    two.update();
+  }
+
+  async setGraph(graph,type){
+    if(type == 'adjecency'){
+      this.graph = this.generateFromAdjecencyMatrix(graph);
+    }
+    else if(type == 'incidence'){
+      this.graph = this.generateFromIncidenceMatrix(graph);
+    }
+    else if (type == 'array') {
+      if (!Array.isArray(graph[0])) {
+        graph.forEach((item, i) => {
+          graph[i] = Object.values(item.properties)
+        });
+      }
+      this.graph = this.generateFromAdjecencyArray(graph);
+    }
+
+    this.calculateLayout();
+    this.draw();
+
+    await sleep(1000)
+  }
+
+  async highlightNode(node,color){
+    this.nodes[node].children[0].fill = colourNameToHex(color);
+    this.draw();
+
+    await sleep(1000)
+  }
+
+  async removeHighlightNode(node){
+    this.highlightNode(node,'darkgray')
+  }
+
+  async highlightEdge(startNode, endNode, color){
+    console.log('edge')
+    this.edges.forEach((item, i) => {
+      if(item.start == startNode && item.end == endNode){
+        console.log('found')
+        item.group.stroke = colourNameToHex(color);
+      }
+    });
+
+    console.log('done')
+    this.draw();
+  }
+
+  async removeHighlightEdge(startNode,endNode){
+    await this.highlightEdge(startNode,endNode,'white')
+  }
+
+  async highlightEdges(nodes,color){
+    nodes.forEach((item, i) => async function() {
+      await this.highlightEdge(item[0],item[1],color)
+    });
+  }
+
+  async removeHighlightEdges(nodes){
+    await this.highlightEdges(nodes,'darkgray')
+  }
+
+  async transition(root,nodes,color){
+    let initialx = this.nodes[root].translation.x;
+    let initialy = this.nodes[root].translation.y;
+
+    let transitions = []
+
+    nodes.forEach((item, i) => {
+      let finalx = this.nodes[item].translation.x;
+      let finaly = this.nodes[item].translation.y;
+
+      let xvec = finalx - initialx;
+      let yvec = finaly - initialy;
+
+      let angle = Math.atan2(yvec,xvec);
+      let initialoffsetX = Math.cos(angle)*20
+      let initialoffsetY = Math.sin(angle)*20
+
+      xvec = (finalx - initialoffsetX) - (initialx + initialoffsetX)
+      yvec = (finaly - initialoffsetY) - (initialy + initialoffsetY)
+
+      console.log(initialoffsetX)
+
+      let bubble = {
+        startx:(initialx + initialoffsetX),
+        starty:(initialy + initialoffsetY),
+        currentx:(initialx + initialoffsetX),
+        currenty:(initialy + initialoffsetY),
+        xvec:xvec,
+        yvec:yvec
+      }
+
+      transitions.push(bubble)
+    });
+
+    var frames = 60;
+
+    function animate(){
+      let groups = []
+      transitions.forEach((item, i) => {
+        let group = new Two.Group();
+        let circle = two.makeCircle(item.currentx,item.currenty,5);
+        circle.fill = colourNameToHex(color);
+        group.add(circle);
+
+        let line = two.makeLine(item.startx,item.starty,item.currentx,item.currenty);
+        line.stroke = colourNameToHex(color);
+        line.linewidth = 5;
+        group.add(line)
+
+        item.currentx += item.xvec/frames
+        item.currenty += item.yvec/frames
+
+        groups.push(group)
+      });
+
+      return groups;
+    }
+
+    for (let i = 0; i<=frames; i++){
+      await sleep(15);
+      this.transitions = animate();
+      this.draw();
+    }
+
+    await sleep(1000)
+    this.transitions = []
+    this.draw();
+  }
 }

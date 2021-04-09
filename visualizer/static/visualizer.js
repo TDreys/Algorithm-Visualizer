@@ -93,7 +93,16 @@ function init(){
 
   //plotting add variable name thing
 
-  //plot single point x evaluation
+  //plot line between two points
+
+  //remove marker
+
+  //graph directionality
+
+  //add timing thing to add animation using sleep, remove sleep from functions
+
+  //edges have values
+
 }
 
 function updateRunning(){
@@ -210,7 +219,7 @@ function addAnimationsToCode(){
           paramString += ','+item;
         });
 
-        let animationFunction = 'createAnimation(\'' + item.animationName+ '\'' + paramString + ');'
+        let animationFunction = ';createAnimation(\'' + item.animationName+ '\'' + paramString + ');'
         code += animationFunction;
       });
     }
@@ -261,6 +270,9 @@ function changeAvailableAnimations(){
   else if (selectedAnimator == 'plot') {
     availableAnimations = Object.keys(PlottingAnimator.availableAnimations);
   }
+  else if(selectedAnimator == 'graph'){
+    availableAnimations = Object.keys(GraphAnimator.availableAnimations);
+  }
 
   let innerString = '';
   availableAnimations.forEach((item) => {
@@ -285,6 +297,9 @@ function changeSelectedAnimation(){
   }
   else if (selectedAnimator == 'plot') {
     params = PlottingAnimator.availableAnimations[selectedAnimation];
+  }
+  else if(selectedAnimator == 'graph'){
+    params = GraphAnimator.availableAnimations[selectedAnimation];
   }
 
   keys = Object.keys(params);
@@ -412,7 +427,7 @@ async function execute(){
     switch (animationList[0][1]) {
       case 'list': animator = new ListAnimator(); break;
       case 'plot':  animator = new PlottingAnimator(); break;
-      case 'graph':  break;
+      case 'graph':  animator = new GraphAnimator(); break;
     }
   }
   else{
@@ -435,6 +450,14 @@ async function execute(){
       case 'plot function': await animator.plotFunction(animationList[i][1]); break;
       case 'plot points': await animator.plotPoints(animationList[i][1]); break;
       case 'clear plot': await animator.clearPlot(); break;
+      case 'evaluate': await animator.evaluateFunction(animationList[i][1],animationList[i][2]);break;
+      case 'set graph': await animator.setGraph(animationList[i][1],animationList[i][2]);break;
+      case 'highlight node': await animator.highlightNode(animationList[i][1],animationList[i][2]);break
+      case 'highlight edge': await animator.highlightEdge(animationList[i][1],animationList[i][2],animationList[i][3]); break;
+      case 'remove edge highlight': await animator.removeHighlightEdge(animationList[i][1],animationList[i][2]);break
+      case 'remove node highlight': await animator.removeHighlightNode(animationList[i][1]);break
+      case 'transition': await animator.transition(animationList[i][1],animationList[i][2],animationList[i][3]);break
+      default: console.log(animationList[i][0] + ' is not an animation')
     }
 
     if(!running){
