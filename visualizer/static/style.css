@@ -183,6 +183,7 @@ body{
   border-color: silver;
   border-width: thin;
   cursor: pointer;
+  width: 130px;
   color: white;
   padding: 5px 6px;
   margin-right: 30px;

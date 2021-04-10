@@ -44,13 +44,13 @@ function init(){
   });
 
   editor.on("guttermousedown", function(e){
-    var target = e.domEvent.target;
+    let target = e.domEvent.target;
     if (target.className.indexOf("ace_gutter-cell") == -1)
     return;
     if (e.clientX > 25 + target.getBoundingClientRect().left)
     return;
 
-    var row = e.getDocumentPosition().row;
+    let row = e.getDocumentPosition().row;
     e.stop()
 
     let animationTab = document.getElementById("addAnimationTab");
@@ -61,7 +61,7 @@ function init(){
 
     document.getElementById("lineNumber").value = row + 1;
 
-    var id = setInterval(frame, 5);
+    let id = setInterval(frame, 5);
 
     function frame() {
       let animationTabContent = document.getElementById("addAnimation");
@@ -88,21 +88,19 @@ function init(){
   //add login and saving
 
   //add else statement thing
+}
 
-  //graphs
-
-  //plotting add variable name thing
-
-  //plot line between two points
-
-  //remove marker
-
-  //graph directionality
-
-  //add timing thing to add animation using sleep, remove sleep from functions
-
-  //edges have values
-
+function objectToArray(object){
+  let newObject = object;
+  if(object != undefined){
+    if (object.class == 'Array') {
+      newObject = Object.values(object.properties);
+      newObject.forEach((item, i) => {
+        newObject[i] = objectToArray(item);
+      });
+    }
+  }
+  return newObject;
 }
 
 function updateRunning(){
@@ -216,6 +214,9 @@ function addAnimationsToCode(){
       lineAnimations.forEach((item) => {
         let paramString = ''
         item.params.forEach((item) => {
+          if(item == ''){
+            item = 'undefined';
+          }
           paramString += ','+item;
         });
 
@@ -339,6 +340,9 @@ function addAnimation(){
   else if (selectedAnimator == 'plot') {
     paramCount = Object.keys(PlottingAnimator.availableAnimations[selectedAnimation]).length;
   }
+  else if (selectedAnimator == 'graph') {
+    paramCount = Object.keys(GraphAnimator.availableAnimations[selectedAnimation]).length;
+  }
 
   let params = [];
 
@@ -347,6 +351,7 @@ function addAnimation(){
   }
 
   newAnimation.params = params;
+  console.log(params)
 
   if(createdAnimations[lineNumber] == undefined){
     createdAnimations[lineNumber] = [];
@@ -389,11 +394,11 @@ function openTab(evt, tab) {
 
 function load(){
   let selectedAnimator = document.getElementById('dataStructures').value;
-  var elem = document.getElementById('draw-shapes');
+  let elem = document.getElementById('draw-shapes');
   elem.innerHTML = '';
 
   if(selectedAnimator == 'list' || selectedAnimator == 'graph'){
-    var elem = document.getElementById('draw-shapes');
+    let elem = document.getElementById('draw-shapes');
     two = new Two({ width: elem.offsetWidth, height: elem.offsetHeight }).appendTo(elem);
   }
 
@@ -437,26 +442,28 @@ async function execute(){
 
   for (let i = 1; i < animationList.length; i++){
     switch (animationList[i][0]) {
-      case 'set items':  await animator.setItems(animationList[i][1]); break;
-      case 'swap':  await animator.swap(animationList[i][1],animationList[i][2]); break;
-      case 'highlight': await animator.highlight(animationList[i][1],animationList[i][2]); break;
-      case 'remove highlight': await animator.removeHighlight(animationList[i][1]); break;
-      case 'append': await animator.append(animationList[i][1]); break;
-      case 'insert': await animator.insert(animationList[i][1],animationList[i][2]);break;
-      case 'remove': await animator.remove(animationList[i][1]);break;
-      case 'replace': await animator.replace(animationList[i][1],animationList[i][2]);break;
-      case 'caption': await animator.caption(animationList[i][1],animationList[i][2]); break;
-      case 'marker': await animator.addMarker(animationList[i][1]); break;
-      case 'plot function': await animator.plotFunction(animationList[i][1]); break;
-      case 'plot points': await animator.plotPoints(animationList[i][1]); break;
-      case 'clear plot': await animator.clearPlot(); break;
-      case 'evaluate': await animator.evaluateFunction(animationList[i][1],animationList[i][2]);break;
-      case 'set graph': await animator.setGraph(animationList[i][1],animationList[i][2]);break;
-      case 'highlight node': await animator.highlightNode(animationList[i][1],animationList[i][2]);break
+      case 'set items':  await animator.setItems(animationList[i][1],animationList[i][2]); break;
+      case 'swap':  await animator.swap(animationList[i][1],animationList[i][2],animationList[i][3]); break;
+      case 'highlight': await animator.highlight(animationList[i][1],animationList[i][2],animationList[i][3]); break;
+      case 'remove highlight': await animator.removeHighlight(animationList[i][1],animationList[i][2]); break;
+      case 'append': await animator.append(animationList[i][1],animationList[i][2]); break;
+      case 'insert': await animator.insert(animationList[i][1],animationList[i][2],animationList[i][3]);break;
+      case 'remove': await animator.remove(animationList[i][1],animationList[i][2]);break;
+      case 'replace': await animator.replace(animationList[i][1],animationList[i][2],animationList[i][3]);break;
+      case 'caption': await animator.caption(animationList[i][1],animationList[i][2],animationList[i][3]); break;
+      case 'marker': await animator.addMarker(animationList[i][1],animationList[i][2]); break;
+      case 'remove marker': await animator.removeMarker(animationList[i][1],animationList[i][2]); break;
+      case 'plot function': await animator.plotFunction(animationList[i][1],animationList[i][2],animationList[i][3]); break;
+      case 'plot points': await animator.plotPoints(animationList[i][1],animationList[i][2],animationList[i][3]); break;
+      case 'clear plot': await animator.clearPlot(animationList[i][1]); break;
+      case 'evaluate': await animator.evaluateFunction(animationList[i][1],animationList[i][2],animationList[i][3],animationList[i][4]);break;
+      case 'plot two point line': await animator.twoPointLine(animationList[i][1],animationList[i][2],animationList[i][3],animationList[i][4]);break;
+      case 'set graph': await animator.setGraph(animationList[i][1],animationList[i][2],animationList[i][3],animationList[i][4]);break;
+      case 'highlight node': await animator.highlightNode(animationList[i][1],animationList[i][2],animationList[i][3]);break
       case 'highlight edge': await animator.highlightEdge(animationList[i][1],animationList[i][2],animationList[i][3]); break;
       case 'remove edge highlight': await animator.removeHighlightEdge(animationList[i][1],animationList[i][2]);break
-      case 'remove node highlight': await animator.removeHighlightNode(animationList[i][1]);break
-      case 'transition': await animator.transition(animationList[i][1],animationList[i][2],animationList[i][3]);break
+      case 'remove node highlight': await animator.removeHighlightNode(animationList[i][1],animationList[i][2]);break
+      case 'transition': await animator.transition(animationList[i][1],animationList[i][2],animationList[i][3],animationList[i][4]);break
       default: console.log(animationList[i][0] + ' is not an animation')
     }
 
@@ -472,9 +479,7 @@ async function execute(){
 
 function createAnimation(animation){
   for(let i = 0;i < animation.length; i++){
-    if(typeof animation[i] == 'object'){
-      animation[i] = Object.values(Object.values(animation[i])[2])
-    }
+    animation[i] = objectToArray(animation[i]);
   }
 
   animationList.push(animation);

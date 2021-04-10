@@ -72,6 +72,17 @@ var temp = items[1];
 items[1] = items[2];
 items[2] = temp;
 
+
+createAnimation('set graph',[[1,2,[3,4]],[],[],[]],'array')
+createAnimation('transition',0,[1,2,3],'green')
+createAnimation('highlight node',[1,2,3],'blue')
+createAnimation('highlight edge',[[0,2],[0,1]],'red')
+createAnimation('remove node highlight',[1,2,3])
+createAnimation('remove edge highlight',[[0,2],[0,1]])
+
+createAnimation('set graph',[[[1,7],2,3],[0],[0],[0],[2,3,5],[4,1]],'array',true,1000)
+createAnimation('highlight edge',[[0,1],[1,0],[4,2],[1,5]],'chartreuse',100)
+
 '{"code":"var items = [4,3,2,1];\\\nvar swapped = true;\\\nvar swaps = 0;\\\nvar comparisons = 0;\\\n\\\nwhile(swapped){\\\n  swapped = false;\\\n  for(var i = 0; i < items.length - 1; i++){\\\n    if(items[i] > items[i+1]){\\\n      var temp = items[i];\\\n      items[i] = items[i+1];\\\n      items[i+1] = temp;\\\n      swapped = true;\\\n    }\\\n    else{\\\n    }\\\n  }\\\n}\\\n\\\n","animations":{"1":[{"animationName":"set items","hasElse":false,"params":["items"]}],"8":[{"animationName":"highlight","hasElse":false,"params":["[i,i+1]","\'LightYellow\'"]},{"animationName":"caption","hasElse":false,"params":["\'Comparisons\'","comparisons+=1"]}],"10":[{"animationName":"highlight","hasElse":false,"params":["[i,i+1]","\'LightPink\'"]},{"animationName":"swap","hasElse":false,"params":["i","i+1"]},{"animationName":"caption","hasElse":false,"params":["\'Swaps\'","swaps+=1"]}],"15":[{"animationName":"highlight","hasElse":false,"params":["[i,i+1]","\'LightGreen\'"]}],"16":[{"animationName":"remove highlight","hasElse":false,"params":["[i,i+1]"]}]},"type":"list","name":"test"}'
 
 "{\"code\":\"var items = [4,3,2,1];\r\nvar swapped = true;\r\nvar swaps = 0;\r\nvar comparisons = 0;\r\n\r\nwhile(swapped){\r\n  swapped = false;\r\n  for(var i = 0; i < items.length - 1; i++){\r\n    if(items[i] > items[i+1]){\r\n      var temp = items[i];\r\n      items[i] = items[i+1];\r\n      items[i+1] = temp;\r\n      swapped = true;\r\n    }\r\n    else{\r\n    }\r\n  }\r\n}\r\n\r\n\",\"animations\":{\"1\":[{\"animationName\":\"set items\",\"hasElse\":false,\"params\":[\"items\"]}],\"8\":[{\"animationName\":\"highlight\",\"hasElse\":false,\"params\":[\"[i,i+1]\",\"'LightYellow'\"]},{\"animationName\":\"caption\",\"hasElse\":false,\"params\":[\"'Comparisons'\",\"comparisons+=1\"]}],\"10\":[{\"animationName\":\"highlight\",\"hasElse\":false,\"params\":[\"[i,i+1]\",\"'LightPink'\"]},{\"animationName\":\"swap\",\"hasElse\":false,\"params\":[\"i\",\"i+1\"]},{\"animationName\":\"caption\",\"hasElse\":false,\"params\":[\"'Swaps'\",\"swaps+=1\"]}],\"15\":[{\"animationName\":\"highlight\",\"hasElse\":false,\"params\":[\"[i,i+1]\",\"'LightGreen'\"]}],\"16\":[{\"animationName\":\"remove highlight\",\"hasElse\":false,\"params\":[\"[i,i+1]\"]}]},\"type\":\"list\",\"name\":\"test\"}"

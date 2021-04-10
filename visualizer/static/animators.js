@@ -66,16 +66,16 @@ class ListAnimator{
   itemColor = 'DarkGray';
   maxFillRatio = 0.7;
   static availableAnimations={
-    'set items':{'items':'list of items or variable name'},
-    'swap':{'index 1':'index of first item','index 2':'index of second item'},
-    'highlight':{'index(es)':'the index of an item or list of indices to highlight','color':'css color of the highlight'},
-    'remove highlight':{'index(es)':'the index of an item or list of indices to remove highlights'},
-    'append':{'value':'value to append to the list'},
-    'insert':{'index':'index of the item to be inserted','value':'value of the item inserted'},
-    'remove':{'index':'index of the item to remove'},
-    'replace':{'index':'index of the item to replace','value':'value of the new item'},
-    'caption':{'name':'name of the caption','value':'value of the caption'},
-    'marker':{'index':'add marker to the right of the item at index'}};
+    'set items':{'items':'list of items or variable name','pause':'time between this animation and the next in milliseconds'},
+    'swap':{'index 1':'index of first item','index 2':'index of second item','pause':'time between this animation and the next in milliseconds'},
+    'highlight':{'index(es)':'the index of an item or list of indices to highlight','color':'css color of the highlight','pause':'time between this animation and the next in milliseconds'},
+    'remove highlight':{'index(es)':'the index of an item or list of indices to remove highlights','pause':'time between this animation and the next in milliseconds'},
+    'append':{'value':'value to append to the list','pause':'time between this animation and the next in milliseconds'},
+    'insert':{'index':'index of the item to be inserted','value':'value of the item inserted','pause':'time between this animation and the next in milliseconds'},
+    'remove':{'index':'index of the item to remove','pause':'time between this animation and the next in milliseconds'},
+    'replace':{'index':'index of the item to replace','value':'value of the new item','pause':'time between this animation and the next in milliseconds'},
+    'caption':{'name':'name of the caption','value':'value of the caption','pause':'time between this animation and the next in milliseconds'},
+    'marker':{'index':'add marker to the right of the item at index','pause':'time between this animation and the next in milliseconds'}};
 
   createListGroups(){
     let padding = 20;
@@ -97,7 +97,9 @@ class ListAnimator{
       group.add(item.group);
     });
 
-    group.add(this.extraGroups);
+    this.extraGroups.forEach((item, i) => {
+      group.add(item.group)
+    });
 
     let bound = group.getBoundingClientRect(false);
 
@@ -140,17 +142,17 @@ class ListAnimator{
     this.draw();
   }
 
-  async setItems(items){
+  async setItems(items,pause = 1000){
     this.items = [];
     items.forEach((item) => {
       this.items.push(new ListItem(item))
     })
     this.createListGroups();
     this.draw();
-    await sleep(1000);
+    await sleep(pause);
   }
 
-  async swap(i,j){
+  async swap(i,j,pause = 1000){
     two.frameCount = 0;
 
     let iGroup = this.items[i].group;
@@ -185,11 +187,11 @@ class ListAnimator{
     this.items[i] = this.items[j];
     this.items[j] = temp;
 
-    await sleep(250);
+    await sleep(pause);
 
   }
 
-  async highlight(index,color){
+  async highlight(index,color,pause = 1000){
     if(typeof index == 'object'){
       for(let i = 0; i<=index.length-1; i++){
         this.items[index[i]].group.children[0].fill = colourNameToHex(color);
@@ -200,14 +202,14 @@ class ListAnimator{
     }
 
     two.update();
-    await sleep(1000);
+    await sleep(pause);
   }
 
   async removeHighlight(index){
     await this.highlight(index,this.itemColor);
   }
 
-  async append(item){
+  async append(item,pause = 1000){
     this.items.push(new ListItem(item));
     this.createListGroups();
     let appended = this.items[this.items.length-1].group
@@ -227,18 +229,18 @@ class ListAnimator{
       animate();
     }
 
-    await sleep(1000);
+    await sleep(pause);
   }
 
-  async addMarker(index){
-    var rect = two.makeRectangle(0,0,5,60);
+  async addMarker(index,pause = 1000){
+    let rect = two.makeRectangle(0,0,5,60);
     rect.fill = colourNameToHex('white');
     rect.opacity = 0;
     rect.noStroke();
-    var targetItemBounds = this.items[index].group.getBoundingClientRect(true);
-    var targetItemPosition = this.items[index].group.translation;
+    let targetItemBounds = this.items[index].group.getBoundingClientRect(true);
+    let targetItemPosition = this.items[index].group.translation;
     rect.translation.set(targetItemPosition.x + targetItemBounds.width/2 + 7 , targetItemPosition.y);
-    this.extraGroups.push(rect);
+    this.extraGroups.push({group:rect,index:index});
     this.draw();
 
     let frames = 20;
@@ -254,14 +256,39 @@ class ListAnimator{
       animate();
     }
 
-    await sleep(1000)
+    await sleep(pause)
   }
 
-  async removeMarker(index){
+  async removeMarker(index,pause = 1000){
+    let foundIndex;
+    this.extraGroups.forEach((item, i) => {
+      if(item.index == index){
+        foundIndex = i;
+      }
+    });
 
+    let frames = 20;
+    let delta = 1/frames;
+    let group = this.extraGroups[foundIndex].group;
+
+    function animate(){
+      group.opacity -= delta;
+      two.update();
+    }
+
+    for (let i = 0; i<=frames; i++){
+      await sleep(15);
+      animate();
+    }
+
+    this.extraGroups.splice(foundIndex, 1);
+
+    this.draw();
+
+    await sleep(pause)
   }
 
-  async insert(index, item){
+  async insert(index, item,pause = 1000){
     this.items.splice(index, 0, new ListItem(item));
     this.createListGroups();
     let inserted = this.items[index].group
@@ -283,10 +310,10 @@ class ListAnimator{
       animate();
     }
 
-    await sleep(1000);
+    await sleep(pause);
   }
 
-  async remove(index){
+  async remove(index,pause = 1000){
     let toRemove = this.items[index].group
     let frames = 30;
     let delta = 1/frames;
@@ -306,10 +333,10 @@ class ListAnimator{
     this.createListGroups();
     this.draw();
 
-    await sleep(1000)
+    await sleep(pause)
   }
 
-  async replace(index, newValue){
+  async replace(index, newValue,pause = 1000){
     let newItem = new ListItem(newValue);
     let distance = 50;
     newItem.createGroup(this.itemColor);
@@ -342,7 +369,7 @@ class ListAnimator{
     this.createListGroups();
     this.draw();
 
-    await sleep(1000)
+    await sleep(pause)
 
   }
 }
@@ -359,55 +386,63 @@ class PlottingAnimator{
   }
 
   static availableAnimations={
-    'plot function':{'function string':'function to plot'},
-    'plot points':{'points':'2d list of x,y points'},
-    'clear plot':{},
-    'evaluate':{'function string':'function to evaluate','x value':'x value to evaluate'}
+    'plot function':{'function string':'function to plot','pause':'time between this animation and the next in milliseconds','color':'color of the line'},
+    'plot points':{'points':'2d list of x,y points','pause':'time between this animation and the next in milliseconds','color':'color of the line'},
+    'clear plot':{'pause':'time between this animation and the next in milliseconds'},
+    'evaluate':{'function string':'function to evaluate','x value':'x value to evaluate','pause':'time between this animation and the next in milliseconds','color':'color of the line'},
+    'plot two point line':{'point 1':'list with the x and y coordinate','point 2':'list with the x and y coordinate','pause':'time between this animation and the next in milliseconds','color':'color of the line'},
   };
 
   drawPlots(){
     functionPlot(this.options)
   }
 
-  async plotFunction(functionString){
-    this.options.data.push({fn:functionString})
+  async plotFunction(functionString,pause = 0,color){
+    this.options.data.push({fn:functionString,color:color})
     this.drawPlots();
-    await sleep(100);
+    await sleep(pause);
   }
 
-  async plotPoints(pointsList){
-
-    if (!Array.isArray(pointsList[0])) {
-      pointsList.forEach((item, i) => {
-        pointsList[i] = Object.values(item.properties)
-      });
-    }
+  async plotPoints(pointsList,pause = 0,color){
 
     this.options.data.push({
         fnType: 'points',
         graphType: 'scatter',
         points: pointsList,
+        color:color,
       })
     this.drawPlots();
+
+    await sleep(pause);
   }
 
-  async clearPlot(){
+  async clearPlot(pause = 0){
     this.options.data = []
     document.getElementById('draw-shapes').innerHTML = '';
     this.drawPlots();
+
+    await sleep(pause);
   }
 
-  async evaluateFunction(functionString,xCoord){
-    let datum = {fn:functionString};
+  async evaluateFunction(functionString,xCoord,pause = 0,color){
+    let datum = {fn:functionString, color:color};
     let scope = {x:xCoord}
     let y = functionPlot.$eval.builtIn(datum, 'fn', scope)
     let point = [[xCoord,y]]
 
-    await this.plotPoints(point);
+    await this.plotPoints(point,pause);
   }
 
-  async twoPointLine(x1,y1,x2,y2){
+  async twoPointLine(point1,point2,pause = 0,color){
+    this.options.data.push({
+      fnType: 'points',
+      graphType: 'polyline',
+      points: [point1,point2],
+      color:color,
+    })
+    this.drawPlots();
 
+    await sleep(pause)
   }
 }
 
@@ -418,21 +453,16 @@ class GraphAnimator{
   edges = [];
   transitions = [];
   layout;
+  isDirected = false;
   maxFillRatio = 0.7;
   static availableAnimations={
-    'set graph':{'graph':'graph to display'},
+    'set graph':{'graph':'graph to display','type':'type of represenation','directed?':'is the graph directed','pause':'time between this animation and the next in milliseconds'},
+    'highlight node':{'node(s)':'index of the node or list of indexes','color':'css color of the highlight','pause':'time between this animation and the next in milliseconds'},
+    'remove node highlight':{'node(s)':'index of the node or list of indexes to remove highlight','pause':'time between this animation and the next in milliseconds'},
+    'highlight edge':{'edge(s)':'list of start and end node pairs for the edge i.e [[0,1],[2,3]]','color':'color of the highlight','pause':'time between this animation and the next in milliseconds'},
+    'remove edge highlight':{'edge(s)':'list of start and end node pairs for the edge i.e [[0,1],[2,3]] to remove highlight from','pause':'time between this animation and the next in milliseconds'},
+    'transition':{'origin':'origin node of the transition','nodes':'list of indexes where the transition goes to','color':'color of the transition','pause':'time between this animation and the next in milliseconds'},
   };
-
-  testmake(){
-    let newGraph = new Springy.Graph();
-    var spruce = newGraph.newNode({label: 'Norway Spruce'});
-    var fir = newGraph.newNode({label: 'Sicilian Fir'});
-
-    // connect them with an edge
-    newGraph.newEdge(spruce, fir,3);
-
-    return newGraph;
-  }
 
   generateFromAdjecencyMatrix(data){
     return this.testmake();
@@ -442,14 +472,18 @@ class GraphAnimator{
     let newGraph = new Springy.Graph();
     let nodes = []
 
-    //create nodes
-    data.forEach((item, i) => {
+    data.forEach(() => {
       nodes.push(newGraph.newNode())
     });
 
     data.forEach((connections, i) => {
       connections.forEach((item, j) => {
-        newGraph.newEdge(nodes[i],nodes[item]);
+        if(Number.isInteger(item)){
+          newGraph.newEdge(nodes[i],nodes[item]);
+        }
+        else {
+          newGraph.newEdge(nodes[i],nodes[item[0]],item[1]);
+        }
       });
     });
 
@@ -473,12 +507,46 @@ class GraphAnimator{
     }
 
     let edgesTemp = [];
+    let tempDirected = this.isDirected
     this.layout.eachEdge(function(edge,spring){
-      let p1 = spring.point1.p;
-      let p2 = spring.point2.p;
-      let line = two.makeLine(p1.x*50,p1.y*50,p2.x*50,p2.y*50);
-      line.stroke = colourNameToHex('white');
-      edgesTemp.push({group:line,start:edge.source.id,end:edge.target.id});
+      let p1 = Object.assign({},spring.point1.p);
+      let p2 = Object.assign({},spring.point2.p);
+      let group = new Two.Group();
+      if(tempDirected){
+        let arrowGroup = new Two.Group();
+        let vector = [p2.x-p1.x,p2.y-p1.y];
+        let perpendicular = [-vector[1],vector[0]];
+        let length = Math.sqrt((perpendicular[0] ** 2)+(perpendicular[1] ** 2)) * 5;
+        perpendicular = [perpendicular[0]/length,perpendicular[1]/length];
+        p1.x = p1.x + perpendicular[0];
+        p1.y = p1.y + perpendicular[1];
+        p2.x = p2.x + perpendicular[0];
+        p2.y = p2.y + perpendicular[1];
+        let triangle = two.makePolygon((p2.x-(vector[0]/length*2.3))*50,(p2.y-(vector[1]/length*2.3))*50,7,3);
+        triangle.fill = colourNameToHex('white');
+        triangle.opacity = 1;
+        triangle.rotation = Math.atan2(vector[1]/length,vector[0]/length) - Math.atan2(1,0) + Math.PI;
+        let line = two.makeLine(p1.x*50,p1.y*50,p2.x*50,p2.y*50);
+        line.stroke = colourNameToHex('white');
+        line.opacity = 1;
+        arrowGroup.add(line);
+        arrowGroup.add(triangle);
+        group.add(arrowGroup);
+      }
+      else {
+        let line = two.makeLine(p1.x*50,p1.y*50,p2.x*50,p2.y*50);
+        line.stroke = colourNameToHex('white');
+        group.add(line);
+      }
+      let data = '';
+      if(typeof edge.data == 'number'){
+        data = edge.data
+      }
+      let text = new Two.Text(data, p1.x*50-(p1.x-p2.x)/2*50,p1.y*50-(p1.y-p2.y)/2*50);
+      text.size =23;
+      text.fill = colourNameToHex('white')
+      group.add(text);
+      edgesTemp.push({group:group,start:edge.source.id,end:edge.target.id});
     })
     this.edges = edgesTemp;
 
@@ -525,7 +593,9 @@ class GraphAnimator{
     two.update();
   }
 
-  async setGraph(graph,type){
+  async setGraph(graph,type,directed,pause = 1000){
+    this.isDirected = directed;
+
     if(type == 'adjecency'){
       this.graph = this.generateFromAdjecencyMatrix(graph);
     }
@@ -533,59 +603,61 @@ class GraphAnimator{
       this.graph = this.generateFromIncidenceMatrix(graph);
     }
     else if (type == 'array') {
-      if (!Array.isArray(graph[0])) {
-        graph.forEach((item, i) => {
-          graph[i] = Object.values(item.properties)
-        });
-      }
       this.graph = this.generateFromAdjecencyArray(graph);
     }
 
     this.calculateLayout();
     this.draw();
 
-    await sleep(1000)
+    await sleep(pause)
   }
 
-  async highlightNode(node,color){
-    this.nodes[node].children[0].fill = colourNameToHex(color);
-    this.draw();
-
-    await sleep(1000)
-  }
-
-  async removeHighlightNode(node){
-    this.highlightNode(node,'darkgray')
-  }
-
-  async highlightEdge(startNode, endNode, color){
-    console.log('edge')
-    this.edges.forEach((item, i) => {
-      if(item.start == startNode && item.end == endNode){
-        console.log('found')
-        item.group.stroke = colourNameToHex(color);
+  async highlightNode(node,color,pause = 1000){
+    if(typeof node == 'object'){
+      for(let i = 0; i<=node.length-1; i++){
+        this.nodes[node[i]].children[0].fill = colourNameToHex(color);
       }
-    });
-
-    console.log('done')
+    }
+    else{
+      this.nodes[node].children[0].fill = colourNameToHex(color);
+    }
     this.draw();
+
+    await sleep(pause)
   }
 
-  async removeHighlightEdge(startNode,endNode){
-    await this.highlightEdge(startNode,endNode,'white')
+  async removeHighlightNode(node,pause = 1000){
+    await this.highlightNode(node,'darkgray',pause)
   }
 
-  async highlightEdges(nodes,color){
-    nodes.forEach((item, i) => async function() {
-      await this.highlightEdge(item[0],item[1],color)
+  async highlightEdge(nodes,color,pause = 1000){
+    let directed = this.isDirected;
+    nodes.forEach((item, i) => {
+      this.edges.forEach((edge, i) => {
+        if(directed){
+          if((edge.start == item[0] && edge.end == item[1])){
+            edge.group.children[0].fill = colourNameToHex(color);
+            edge.group.children[0].stroke = colourNameToHex(color);
+          }
+        }
+        else{
+          if((edge.start == item[0] && edge.end == item[1]) || (edge.start == item[1] && edge.end == item[0])){
+            edge.group.children[0].fill = colourNameToHex(color);
+            edge.group.children[0].stroke = colourNameToHex(color);
+          }
+        }
+      });
     });
+    this.draw();
+
+    await sleep(pause);
   }
 
-  async removeHighlightEdges(nodes){
-    await this.highlightEdges(nodes,'darkgray')
+  async removeHighlightEdge(nodes,pause = 1000){
+    await this.highlightEdge(nodes,'white',pause)
   }
 
-  async transition(root,nodes,color){
+  async transition(root,nodes,color,pause = 1000){
     let initialx = this.nodes[root].translation.x;
     let initialy = this.nodes[root].translation.y;
 
@@ -604,8 +676,6 @@ class GraphAnimator{
 
       xvec = (finalx - initialoffsetX) - (initialx + initialoffsetX)
       yvec = (finaly - initialoffsetY) - (initialy + initialoffsetY)
-
-      console.log(initialoffsetX)
 
       let bubble = {
         startx:(initialx + initialoffsetX),
@@ -649,7 +719,7 @@ class GraphAnimator{
       this.draw();
     }
 
-    await sleep(1000)
+    await sleep(pause)
     this.transitions = []
     this.draw();
   }
