@@ -39,6 +39,11 @@
         <button id="addAnimationTab" class="tablinks" onclick="openTab(event, 'addAnimation')">Add Animation</button>
         <button id="demoSelectorTab" class="tablinks" onclick="openTab(event, 'demoSelector')">Demonstrations</button>
         <button class="tablinks" onclick="openTab(event, 'docs')">Docs</button>
+        {% if user.is_authenticated %}
+          <a href="{% url 'logout' %}"><button class="tablinks">Logout</button></a>
+        {% else %}
+          <a href="{% url 'login' %}"><button class="tablinks">Login</button></a>
+        {% endif %}
       </div>
 
       <div id="animation" class="tabcontent">
@@ -49,7 +54,7 @@
           <option value="graph">Graph/Tree</option>
           <option value="plot">Plot</option>
         </select>
-        <button id="saveDemoButton" class="controlButton" name="saveButton" onclick="saveDemonstration();">Save Demonstration</button>
+        <button id="saveDemoButton" class="controlButton" name="saveButton" onclick="addDemonstration();">Save Demonstration</button>
 
         <div id="createdAnimations">
 
@@ -94,6 +99,7 @@
           </div>
 
           <div id="usermade" class="demoButtons">
+
           </div>
         </div>
       </div>
@@ -103,6 +109,8 @@
   <div id='editor'></div>
 
   <script type="text/javascript">
+    userDemonstrations = JSON.parse("{{databaseAnimations|escapejs}}");
+    console.log(userDemonstrations)
     init();
   </script>
 

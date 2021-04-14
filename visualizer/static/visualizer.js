@@ -4,14 +4,7 @@ var createdAnimations = {};
 var two;
 var editor;
 var running = false;
-var premade = {
-  1:{name:'Bubble Sort',serialized:''},
-  2:{name:'Selection Sort',serialized:''},
-  3:{name:'Insertion Sort',serialized:''}
-};
-var usermade = {
-  1:{name:'Test',serialized:''}
-};
+var userDemonstrations;
 
 class CreatedAnimation{
   animationName;
@@ -83,9 +76,13 @@ function init(){
 
   //add tooltips for animation labels
 
-  //finish demonstration lodaing and making idk
+  //delete demonstration
 
-  //add login and saving
+  //adding name to demo
+
+  //loading admin animations
+
+  //alert when changing animation type when animations already exist
 
   //add else statement thing
 }
@@ -140,48 +137,110 @@ function updateLoaded(loaded){
 }
 
 function updateDemonstrations(){
-  let premadeKeys = Object.keys(premade);
 
-  premadeKeys.forEach((item, i) => {
-    let premadeDiv = document.getElementById('premade');
-
-    let button = document.createElement('button')
-    button.setAttribute('class','demoButton')
-    button.setAttribute('onclick','loadDemonstration('+ premade[item].serialized +')')
-    button.innerHTML = premade[item].name;
-
-    premadeDiv.appendChild(button);
-  });
-
-  let usermadeKeys = Object.keys(usermade);
-
-  usermadeKeys.forEach((item, i) => {
-    let usermadeDiv = document.getElementById('usermade');
+  console.log(userDemonstrations.length)
+  let usermadeDiv = document.getElementById('usermade');
+  usermadeDiv.innerHTML='';
+  userDemonstrations.forEach((item, i) => {
+    let animation = JSON.parse(item.fields.animations);
 
     let button = document.createElement('button')
     button.setAttribute('class','demoButton')
-    button.setAttribute('onclick','loadDemonstration('+ usermade[item].serialized +')')
-    button.innerHTML = usermade[item].name;
+    button.setAttribute('onclick','loadDemonstration('+ item.fields.animations +')')
+    button.innerHTML = animation.name;
 
     usermadeDiv.appendChild(button);
   });
 
+
+
+
+  //console.log(JSON.parse(usermadeAnimations));
+
+  // premadeKeys.forEach((item, i) => {
+  //   let premadeDiv = document.getElementById('premade');
+  //
+  //   let button = document.createElement('button')
+  //   button.setAttribute('class','demoButton')
+  //   button.setAttribute('onclick','loadDemonstration('+ premade[item].serialized +')')
+  //   button.innerHTML = premade[item].name;
+  //
+  //   premadeDiv.appendChild(button);
+  // });
+  //
+  // let usermadeKeys = Object.keys(usermade);
+  //
+  // usermadeKeys.forEach((item, i) => {
+  //   let usermadeDiv = document.getElementById('usermade');
+  //
+  //   let button = document.createElement('button')
+  //   button.setAttribute('class','demoButton')
+  //   button.setAttribute('onclick','loadDemonstration('+ usermade[item].serialized +')')
+  //   button.innerHTML = usermade[item].name;
+  //
+  //   usermadeDiv.appendChild(button);
+  // });
+
 }
 
-function saveDemonstration(){
-  let demo = new Demonstration();
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function addDemonstration(){
+  let demo = new Object();
   demo.code = editor.session.getValue();
   demo.animations = createdAnimations;
   demo.type = document.getElementById('dataStructures').value;
   demo.name = 'test';
 
+  userDemonstrations.push(demo);
+  console.log(userDemonstrations)
+  console.log(demo)
+  saveDemonstration(demo);
+}
+
+function saveDemonstration(demo){
+
   let serialized = JSON.stringify(demo);
 
-  console.log(serialized);
+  let request = new XMLHttpRequest();
+
+  console.log(serialized)
+
+  let data = encodeURIComponent( 'serialized' ) + '=' + encodeURIComponent( serialized )
+  let urlData = data.replace( /%20/g, '+' );
+
+  request.addEventListener( 'error', function(event) {
+    alert( 'Error' );
+  } );
+
+  request.addEventListener( 'load', function(event) {
+    userDemonstrations = JSON.parse(JSON.parse(this.responseText).databaseAnimations);
+    updateDemonstrations();
+  } );
+
+  request.open( 'POST', 'http://127.0.0.1:8000/saveAnimation');
+
+  request.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded');
+
+  request.setRequestHeader('X-CSRFToken',getCookie('csrftoken'))
+
+  request.send(urlData);
 }
 
 function loadDemonstration(serialized){
-  console.log(typeof serialized);
   createdAnimations = serialized.animations;
   editor.session.setValue(serialized.code);
   document.getElementById('dataStructures').value = serialized.type;

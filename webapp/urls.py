@@ -15,8 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
+from django.conf.urls import url
+from visualizer.views import *
 
 urlpatterns = [
     path('', include('visualizer.urls')),
     path('admin/', admin.site.urls),
+    path('account/',include('django.contrib.auth.urls')),
+    path('account/register', register,name='register'),
+    path('saveAnimation',saveSerialized,name='saveSerialized')
 ]
