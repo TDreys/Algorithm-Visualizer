@@ -35,6 +35,8 @@ function colourNameToHex(colour)
     return colour;
 }
 
+var timeStep = 2;
+
 class ListItem{
   value;
   group;
@@ -149,7 +151,7 @@ class ListAnimator{
     })
     this.createListGroups();
     this.draw();
-    await sleep(pause);
+    await sleep(pause/timeStep);
   }
 
   async swap(i,j,pause = 1000){
@@ -162,8 +164,8 @@ class ListAnimator{
     let center = [iGroup.translation.x + radius,iGroup.translation.y];
     let iAngle = 180;
     let jAngle = 0;
-    let delta = 2;
-    let frames = 180/delta;
+    let frames = Math.floor(60/timeStep);
+    let delta = 180/frames;
 
     function animate(){
       iGroup.translation.set(center[0]+(Math.cos(degrees_to_radians(iAngle))*radius),
@@ -187,7 +189,7 @@ class ListAnimator{
     this.items[i] = this.items[j];
     this.items[j] = temp;
 
-    await sleep(pause);
+    await sleep(pause/timeStep);
 
   }
 
@@ -202,7 +204,7 @@ class ListAnimator{
     }
 
     two.update();
-    await sleep(pause);
+    await sleep(pause/timeStep);
   }
 
   async removeHighlight(index){
@@ -216,7 +218,7 @@ class ListAnimator{
     appended.opacity = 0;
     this.draw();
 
-    let frames = 30;
+    let frames = Math.floor(30/timeStep);
     let delta = 1/frames;
 
     function animate(){
@@ -229,7 +231,7 @@ class ListAnimator{
       animate();
     }
 
-    await sleep(pause);
+    await sleep(pause/timeStep);
   }
 
   async addMarker(index,pause = 1000){
@@ -243,7 +245,7 @@ class ListAnimator{
     this.extraGroups.push({group:rect,index:index});
     this.draw();
 
-    let frames = 20;
+    let frames = Math.floor(20/timeStep);
     let delta = 1/frames;
 
     function animate(){
@@ -256,7 +258,7 @@ class ListAnimator{
       animate();
     }
 
-    await sleep(pause)
+    await sleep(pause/timeStep)
   }
 
   async removeMarker(index,pause = 1000){
@@ -267,7 +269,7 @@ class ListAnimator{
       }
     });
 
-    let frames = 20;
+    let frames = Math.floor(20/timeStep);
     let delta = 1/frames;
     let group = this.extraGroups[foundIndex].group;
 
@@ -285,7 +287,7 @@ class ListAnimator{
 
     this.draw();
 
-    await sleep(pause)
+    await sleep(pause/timeStep)
   }
 
   async insert(index, item,pause = 1000){
@@ -296,7 +298,7 @@ class ListAnimator{
     inserted.opacity = 0;
     this.draw();
 
-    let frames = 30;
+    let frames = Math.floor(30/timeStep);
     let delta = 1/frames;
 
     function animate(){
@@ -310,12 +312,12 @@ class ListAnimator{
       animate();
     }
 
-    await sleep(pause);
+    await sleep(pause/timeStep);
   }
 
   async remove(index,pause = 1000){
     let toRemove = this.items[index].group
-    let frames = 30;
+    let frames = Math.floor(30/timeStep);
     let delta = 1/frames;
 
     function animate(){
@@ -333,7 +335,7 @@ class ListAnimator{
     this.createListGroups();
     this.draw();
 
-    await sleep(pause)
+    await sleep(pause/timeStep)
   }
 
   async replace(index, newValue,pause = 1000){
@@ -348,7 +350,7 @@ class ListAnimator{
     this.draw()
 
 
-    let frames = 30;
+    let frames = Math.floor(30/timeStep);
     let delta = 1/frames;
 
     function animate(){
@@ -369,7 +371,7 @@ class ListAnimator{
     this.createListGroups();
     this.draw();
 
-    await sleep(pause)
+    await sleep(pause/timeStep)
 
   }
 }
@@ -400,7 +402,7 @@ class PlottingAnimator{
   async plotFunction(functionString,pause = 0,color){
     this.options.data.push({fn:functionString,color:color})
     this.drawPlots();
-    await sleep(pause);
+    await sleep(pause/timeStep);
   }
 
   async plotPoints(pointsList,pause = 0,color){
@@ -413,7 +415,7 @@ class PlottingAnimator{
       })
     this.drawPlots();
 
-    await sleep(pause);
+    await sleep(pause/timeStep);
   }
 
   async clearPlot(pause = 0){
@@ -421,7 +423,7 @@ class PlottingAnimator{
     document.getElementById('draw-shapes').innerHTML = '';
     this.drawPlots();
 
-    await sleep(pause);
+    await sleep(pause/timeStep);
   }
 
   async evaluateFunction(functionString,xCoord,pause = 0,color){
@@ -442,7 +444,7 @@ class PlottingAnimator{
     })
     this.drawPlots();
 
-    await sleep(pause)
+    await sleep(pause/timeStep)
   }
 }
 
@@ -452,6 +454,7 @@ class GraphAnimator{
   nodes = [];
   edges = [];
   transitions = [];
+  captions = {};
   layout;
   isDirected = false;
   maxFillRatio = 0.7;
@@ -462,6 +465,7 @@ class GraphAnimator{
     'highlight edge':{'edge(s)':'list of start and end node pairs for the edge i.e [[0,1],[2,3]]','color':'color of the highlight','pause':'time between this animation and the next in milliseconds'},
     'remove edge highlight':{'edge(s)':'list of start and end node pairs for the edge i.e [[0,1],[2,3]] to remove highlight from','pause':'time between this animation and the next in milliseconds'},
     'transition':{'origin':'origin node of the transition','nodes':'list of indexes where the transition goes to','color':'color of the transition','pause':'time between this animation and the next in milliseconds'},
+    'caption':{'name':'name of the caption','value':'value of the caption','pause':'time between this animation and the next in milliseconds'},
   };
 
   generateFromAdjecencyMatrix(data){
@@ -590,7 +594,34 @@ class GraphAnimator{
     group.translation.set(two.width/2, two.height/2)
 
     two.add(group);
+    two.add(this.createCaptionGroups())
     two.update();
+  }
+
+  createCaptionGroups(){
+    let group = new Two.Group();
+    let y = 0;
+    for (const [key, value] of Object.entries(this.captions)) {
+      let string = key + ": " + value;
+
+      let text = new Two.Text(string, 0,y);
+      text.size = 15;
+      text.fill = colourNameToHex('white');
+      text.alignment = 'left';
+      let bounds = text.getBoundingClientRect(true);
+
+      y += bounds.height + 5;
+      group.add(text);
+    }
+
+    let bounds = group.getBoundingClientRect(true);
+    group.translation.set(two.width-bounds.width,two.height-bounds.height-20);
+    return group;
+  }
+
+  async caption(name,values){
+    this.captions[name] = values;
+    this.draw();
   }
 
   async setGraph(graph,type,directed,pause = 1000){
@@ -609,7 +640,7 @@ class GraphAnimator{
     this.calculateLayout();
     this.draw();
 
-    await sleep(pause)
+    await sleep(pause/timeStep)
   }
 
   async highlightNode(node,color,pause = 1000){
@@ -623,7 +654,7 @@ class GraphAnimator{
     }
     this.draw();
 
-    await sleep(pause)
+    await sleep(pause/timeStep)
   }
 
   async removeHighlightNode(node,pause = 1000){
@@ -650,7 +681,7 @@ class GraphAnimator{
     });
     this.draw();
 
-    await sleep(pause);
+    await sleep(pause/timeStep);
   }
 
   async removeHighlightEdge(nodes,pause = 1000){
@@ -689,7 +720,7 @@ class GraphAnimator{
       transitions.push(bubble)
     });
 
-    var frames = 60;
+    var frames = Math.floor(60/timeStep);
 
     function animate(){
       let groups = []
@@ -719,7 +750,7 @@ class GraphAnimator{
       this.draw();
     }
 
-    await sleep(pause)
+    await sleep(pause/timeStep)
     this.transitions = []
     this.draw();
   }

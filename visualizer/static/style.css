@@ -36,7 +36,9 @@ body{
 }
 
 #controls{
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 8px 0px;
 }
 
@@ -57,7 +59,7 @@ body{
   color: white;
   padding: 7px 10px;
   transition: 0.3s;
-  margin: 0;
+  margin-right: 5px;
 }
 
 .controlButton:hover {
@@ -145,6 +147,27 @@ body{
   background-color: #555;
 }
 
+.deleteButton{
+  transition: 0.3s;
+  background-color: #292B2D;
+  color:white;
+  border: none;
+  outline: none;
+  padding: 5px 5px;
+  cursor: pointer;
+}
+
+.deleteButton:hover{
+  background-color: #555;
+}
+
+.buttonDiv{
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+
 #demos{
   display: flex;
   width: inherit;
@@ -153,17 +176,14 @@ body{
 
 .demoButtons{
   width: 50%;
-  display:block;
+  overflow-y: scroll;
 }
 
 .demoButton{
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 20px;
+  margin-right: 5px;
   width: 60%;
   font-family: inherit;
   background-color: #292B2D;
-  float: left;
   border: none;
   outline: none;
   cursor: pointer;
@@ -194,8 +214,11 @@ body{
   width: 5em;
 }
 
-#saveDemoButton{
+#demoNameLabel{
   margin-left: 80px;
+}
+#demoName{
+  margin-left: 5px;
 }
 
 #hasElse{
@@ -229,4 +252,47 @@ body{
 .canvas .x.axis .tick line{
   stroke:grey;
   fill:white;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #333;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.slider {
+  -webkit-appearance: none;
+  margin-left: 20px;
+  appearance: none;
+  width: 100px;
+  height: 5px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s; /
+  transition: opacity .2s;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  background: #444;
+  cursor: pointer;
 }

@@ -30,8 +30,9 @@
     <div id="control-panel">
       <div id='controls'>
         <button id="loadButton" class="controlButton" onclick='load();'>Load</button>
-        <button id="runButton" class="controlButton" onclick='running = !running;execute();'>Run</button>
-        <button id="stepButton" class="controlButton" onclick='step();'>Step</button>
+        <button id="runButton" class="controlButton">Run</button>
+        <button id="stepButton" class="controlButton">Step</button>
+        <input type="range" min="1" max="10" value="2" class="slider" id="timeStepRange" name="timeStepRange">
       </div>
 
       <div class="tab">
@@ -54,6 +55,8 @@
           <option value="graph">Graph/Tree</option>
           <option value="plot">Plot</option>
         </select>
+        <label id="demoNameLabel" for="demoName">Demonstration Name: </label>
+        <input id="demoName" type="text" name="demoName" value="demo" class="textInput">
         <button id="saveDemoButton" class="controlButton" name="saveButton" onclick="addDemonstration();">Save Demonstration</button>
 
         <div id="createdAnimations">
@@ -67,8 +70,8 @@
           <label for="lineNumber">Line Number: </label>
           <input id="lineNumber" type="number" name="lineNumber" value="1" class="textInput">
 
-          <label for="availableAnimations">Animation: </label>
-          <select id="selectedAnimation" class="controlButton" id="availableAnimations" name="availableAnimations" onchange="changeSelectedAnimation();">
+          <label for="selectedAnimation">Animation: </label>
+          <select id="selectedAnimation" class="controlButton" name="selectedAnimation" onchange="changeSelectedAnimation();">
             <option value="test">test</option>
           </select>
 
@@ -110,7 +113,7 @@
 
   <script type="text/javascript">
     userDemonstrations = JSON.parse("{{databaseAnimations|escapejs}}");
-    console.log(userDemonstrations)
+    adminDemonstrations = JSON.parse("{{adminAnimations|escapejs}}");
     init();
   </script>
 

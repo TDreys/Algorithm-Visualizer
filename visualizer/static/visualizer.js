@@ -1,10 +1,14 @@
 var myInterpreter;
+var animator;
 var animationList = [];
+var currentAnimationIndex = 0;
 var createdAnimations = {};
 var two;
 var editor;
 var running = false;
+var isAnimating = false;
 var userDemonstrations;
+var adminDemonstrations;
 
 class CreatedAnimation{
   animationName;
@@ -74,15 +78,40 @@ function init(){
     }
   })
 
+  let animationTypeSelect = document.getElementById('dataStructures');
+  animationTypeSelect.onchange = function(){
+    if(Object.keys(createdAnimations).length){
+      if(confirm('Changing the animation type will remove existing animations, do you want to continue?')){
+        createdAnimations = {};
+        updateAddedAnimations();
+      }
+    }
+    changeAvailableAnimations();
+  }
+
+  let runButton = document.getElementById('runButton')
+  runButton.onclick = function(){
+    running = !running;
+    updateRunning();
+    execute();
+  }
+
+  let stepButton = document.getElementById('stepButton')
+  stepButton.onclick = async function(){
+    isAnimating= true;
+    updateIsAnimating();
+    await step(currentAnimationIndex);
+    currentAnimationIndex++;
+    updateIsAnimating();
+  }
+
+  let timeStepRange = document.getElementById('timeStepRange')
+  timeStepRange.onchange = function(){
+    timeStep = this.value
+  }
   //add tooltips for animation labels
 
-  //delete demonstration
-
-  //adding name to demo
-
-  //loading admin animations
-
-  //alert when changing animation type when animations already exist
+  //redirects when clicking buttons
 
   //add else statement thing
 }
@@ -100,14 +129,27 @@ function objectToArray(object){
   return newObject;
 }
 
+function updateIsAnimating(){
+  if(isAnimating){
+    document.getElementById('runButton').disabled = true;
+    document.getElementById('stepButton').disabled = true;
+    document.getElementById('loadButton').disabled = true;
+
+  }
+  else{
+    document.getElementById('runButton').disabled = false;
+    document.getElementById('stepButton').disabled = false;
+    document.getElementById('loadButton').disabled = false;
+  }
+}
+
 function updateRunning(){
   if(running){
     let run = document.getElementById('runButton');
     run.disabled = false;
-    run.innerHTML = 'Reset'
+    run.innerHTML = 'Pause'
     document.getElementById('stepButton').disabled = true;
     document.getElementById('loadButton').disabled = true;
-
   }
   else{
     let run = document.getElementById('runButton');
@@ -138,49 +180,45 @@ function updateLoaded(loaded){
 
 function updateDemonstrations(){
 
-  console.log(userDemonstrations.length)
   let usermadeDiv = document.getElementById('usermade');
   usermadeDiv.innerHTML='';
   userDemonstrations.forEach((item, i) => {
-    let animation = JSON.parse(item.fields.animations);
+    let demo = JSON.parse(item.fields.animations);
+
+    let buttonDiv = document.createElement('div');
+    buttonDiv.setAttribute('class','buttonDiv')
 
     let button = document.createElement('button')
     button.setAttribute('class','demoButton')
     button.setAttribute('onclick','loadDemonstration('+ item.fields.animations +')')
-    button.innerHTML = animation.name;
+    button.innerHTML = demo.name;
 
-    usermadeDiv.appendChild(button);
+    let deleteButton = document.createElement('button')
+    deleteButton.setAttribute('class','deleteButton');
+    deleteButton.setAttribute('onclick','deleteDemonstration('+item.pk+')');
+    deleteButton.innerHTML = '&#10006;';
+
+    buttonDiv.appendChild(button)
+    buttonDiv.appendChild(deleteButton);
+    usermadeDiv.appendChild(buttonDiv);
   });
 
+  let premadeDiv = document.getElementById('premade');
+  premadeDiv.innerHTML = '';
 
+  adminDemonstrations.forEach((item, i) => {
+    let demo = JSON.parse(item.fields.animations);
 
+    let buttonDiv = document.createElement('div');
+    buttonDiv.setAttribute('class','buttonDiv')
+    let button = document.createElement('button')
+    button.setAttribute('class','demoButton')
+    button.setAttribute('onclick','loadDemonstration('+ item.fields.animations +')')
+    button.innerHTML = demo.name;
 
-  //console.log(JSON.parse(usermadeAnimations));
-
-  // premadeKeys.forEach((item, i) => {
-  //   let premadeDiv = document.getElementById('premade');
-  //
-  //   let button = document.createElement('button')
-  //   button.setAttribute('class','demoButton')
-  //   button.setAttribute('onclick','loadDemonstration('+ premade[item].serialized +')')
-  //   button.innerHTML = premade[item].name;
-  //
-  //   premadeDiv.appendChild(button);
-  // });
-  //
-  // let usermadeKeys = Object.keys(usermade);
-  //
-  // usermadeKeys.forEach((item, i) => {
-  //   let usermadeDiv = document.getElementById('usermade');
-  //
-  //   let button = document.createElement('button')
-  //   button.setAttribute('class','demoButton')
-  //   button.setAttribute('onclick','loadDemonstration('+ usermade[item].serialized +')')
-  //   button.innerHTML = usermade[item].name;
-  //
-  //   usermadeDiv.appendChild(button);
-  // });
-
+    buttonDiv.appendChild(button);
+    premadeDiv.appendChild(buttonDiv);
+  });
 }
 
 function getCookie(name) {
@@ -203,7 +241,7 @@ function addDemonstration(){
   demo.code = editor.session.getValue();
   demo.animations = createdAnimations;
   demo.type = document.getElementById('dataStructures').value;
-  demo.name = 'test';
+  demo.name = document.getElementById('demoName').value;
 
   userDemonstrations.push(demo);
   console.log(userDemonstrations)
@@ -211,13 +249,36 @@ function addDemonstration(){
   saveDemonstration(demo);
 }
 
+function deleteDemonstration(pk){
+  let confirmation = confirm('Are you sure you want to delete this demonstration?')
+
+  if(confirmation){
+    let request = new XMLHttpRequest();
+
+    request.addEventListener( 'error', function(event) {
+      alert( 'Error' );
+    } );
+
+    request.addEventListener( 'load', function(event) {
+      userDemonstrations = JSON.parse(JSON.parse(this.responseText).databaseAnimations);
+      updateDemonstrations();
+    } );
+
+    request.open( 'POST', window.location.href+'deleteDemonstration');
+
+    request.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded');
+
+    request.setRequestHeader('X-CSRFToken',getCookie('csrftoken'))
+
+    request.send('pk='+pk);
+  }
+}
+
 function saveDemonstration(demo){
 
   let serialized = JSON.stringify(demo);
 
   let request = new XMLHttpRequest();
-
-  console.log(serialized)
 
   let data = encodeURIComponent( 'serialized' ) + '=' + encodeURIComponent( serialized )
   let urlData = data.replace( /%20/g, '+' );
@@ -231,7 +292,7 @@ function saveDemonstration(demo){
     updateDemonstrations();
   } );
 
-  request.open( 'POST', 'http://127.0.0.1:8000/saveAnimation');
+  request.open( 'POST', window.location.href+'saveDemonstration');
 
   request.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded');
 
@@ -465,27 +526,8 @@ function load(){
   myInterpreter = new Interpreter(code,initFunc);
   animationList = [];
   myInterpreter.run();
-  updateLoaded(true);
-}
 
-function nextStep() {
-  if (myInterpreter.step()) {
-    window.setTimeout(nextStep, 0);
-  }
-}
-
-function step(){
-  console.log(myInterpreter.step());
-}
-
-async function execute(){
-
-  updateRunning();
-  if(!running){
-    return;
-  }
-
-  let animator;
+  currentAnimationIndex=1;
 
   if(animationList[0][0] == 'type'){
     switch (animationList[0][1]) {
@@ -499,41 +541,65 @@ async function execute(){
     return;
   }
 
-  for (let i = 1; i < animationList.length; i++){
-    switch (animationList[i][0]) {
-      case 'set items':  await animator.setItems(animationList[i][1],animationList[i][2]); break;
-      case 'swap':  await animator.swap(animationList[i][1],animationList[i][2],animationList[i][3]); break;
-      case 'highlight': await animator.highlight(animationList[i][1],animationList[i][2],animationList[i][3]); break;
-      case 'remove highlight': await animator.removeHighlight(animationList[i][1],animationList[i][2]); break;
-      case 'append': await animator.append(animationList[i][1],animationList[i][2]); break;
-      case 'insert': await animator.insert(animationList[i][1],animationList[i][2],animationList[i][3]);break;
-      case 'remove': await animator.remove(animationList[i][1],animationList[i][2]);break;
-      case 'replace': await animator.replace(animationList[i][1],animationList[i][2],animationList[i][3]);break;
-      case 'caption': await animator.caption(animationList[i][1],animationList[i][2],animationList[i][3]); break;
-      case 'marker': await animator.addMarker(animationList[i][1],animationList[i][2]); break;
-      case 'remove marker': await animator.removeMarker(animationList[i][1],animationList[i][2]); break;
-      case 'plot function': await animator.plotFunction(animationList[i][1],animationList[i][2],animationList[i][3]); break;
-      case 'plot points': await animator.plotPoints(animationList[i][1],animationList[i][2],animationList[i][3]); break;
-      case 'clear plot': await animator.clearPlot(animationList[i][1]); break;
-      case 'evaluate': await animator.evaluateFunction(animationList[i][1],animationList[i][2],animationList[i][3],animationList[i][4]);break;
-      case 'plot two point line': await animator.twoPointLine(animationList[i][1],animationList[i][2],animationList[i][3],animationList[i][4]);break;
-      case 'set graph': await animator.setGraph(animationList[i][1],animationList[i][2],animationList[i][3],animationList[i][4]);break;
-      case 'highlight node': await animator.highlightNode(animationList[i][1],animationList[i][2],animationList[i][3]);break
-      case 'highlight edge': await animator.highlightEdge(animationList[i][1],animationList[i][2],animationList[i][3]); break;
-      case 'remove edge highlight': await animator.removeHighlightEdge(animationList[i][1],animationList[i][2]);break
-      case 'remove node highlight': await animator.removeHighlightNode(animationList[i][1],animationList[i][2]);break
-      case 'transition': await animator.transition(animationList[i][1],animationList[i][2],animationList[i][3],animationList[i][4]);break
-      default: console.log(animationList[i][0] + ' is not an animation')
-    }
+  updateLoaded(true);
+}
 
-    if(!running){
-      updateRunning();
+function nextStep() {
+  if (myInterpreter.step()) {
+    window.setTimeout(nextStep, 0);
+  }
+}
+
+async function step(index){
+
+  let currentAnimation = animationList[index];
+
+  switch (currentAnimation[0]) {
+    case 'set items':  await animator.setItems(currentAnimation[1],currentAnimation[2]); break;
+    case 'swap':  await animator.swap(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
+    case 'highlight': await animator.highlight(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
+    case 'remove highlight': await animator.removeHighlight(currentAnimation[1],currentAnimation[2]); break;
+    case 'append': await animator.append(currentAnimation[1],currentAnimation[2]); break;
+    case 'insert': await animator.insert(currentAnimation[1],currentAnimation[2],currentAnimation[3]);break;
+    case 'remove': await animator.remove(currentAnimation[1],currentAnimation[2]);break;
+    case 'replace': await animator.replace(currentAnimation[1],currentAnimation[2],currentAnimation[3]);break;
+    case 'caption': await animator.caption(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
+    case 'marker': await animator.addMarker(currentAnimation[1],currentAnimation[2]); break;
+    case 'remove marker': await animator.removeMarker(currentAnimation[1],currentAnimation[2]); break;
+    case 'plot function': await animator.plotFunction(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
+    case 'plot points': await animator.plotPoints(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
+    case 'clear plot': await animator.clearPlot(currentAnimation[1]); break;
+    case 'evaluate': await animator.evaluateFunction(currentAnimation[1],currentAnimation[2],currentAnimation[3],currentAnimation[4]);break;
+    case 'plot two point line': await animator.twoPointLine(currentAnimation[1],currentAnimation[2],currentAnimation[3],currentAnimation[4]);break;
+    case 'set graph': await animator.setGraph(currentAnimation[1],currentAnimation[2],currentAnimation[3],currentAnimation[4]);break;
+    case 'highlight node': await animator.highlightNode(currentAnimation[1],currentAnimation[2],currentAnimation[3]);break
+    case 'highlight edge': await animator.highlightEdge(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
+    case 'remove edge highlight': await animator.removeHighlightEdge(currentAnimation[1],currentAnimation[2]);break
+    case 'remove node highlight': await animator.removeHighlightNode(currentAnimation[1],currentAnimation[2]);break
+    case 'transition': await animator.transition(currentAnimation[1],currentAnimation[2],currentAnimation[3],currentAnimation[4]);break
+    default: console.log(currentAnimation[0] + ' is not an animation')
+  }
+
+  if(index == animationList.length-1){
+    running = false;
+    updateRunning();
+    currentAnimationIndex=0;
+  }
+  isAnimating = false;
+}
+
+async function execute(){
+  if(!running){
+    return;
+  }
+  for(currentAnimationIndex; currentAnimationIndex < animationList.length; currentAnimationIndex++){
+    if(running){
+      await step(currentAnimationIndex);
+    }
+    else {
       return;
     }
   }
-
-  running = false;
-  updateRunning();
 }
 
 function createAnimation(animation){

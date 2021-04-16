@@ -23,5 +23,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('account/',include('django.contrib.auth.urls')),
     path('account/register', register,name='register'),
-    path('saveAnimation',saveSerialized,name='saveSerialized')
+    path('saveDemonstration',saveSerialized,name='saveSerialized'),
+    path('deleteDemonstration',deleteDemonstration,name='deleteDemonstration'),
 ]

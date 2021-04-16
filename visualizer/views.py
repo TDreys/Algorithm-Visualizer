@@ -7,6 +7,7 @@ from django.contrib.auth import login
 from django.template import RequestContext
 from json import dumps
 from .forms import SerializedForm
+from django.forms import Form
 from django.core import serializers
 from .models import Animation
 from django.contrib.auth.models import User
@@ -16,9 +17,12 @@ from django.contrib.auth.models import User
 # Create your views here.
 def visualizer(request):
     animationData = [];
+    superUsers = User.objects.filter(is_superuser=True).values_list('pk');
+    adminAnimationData = serializers.serialize('json',Animation.objects.filter(user__in=superUsers));
+
     if request.user.is_authenticated:
-        animationData = serializers.serialize("json", Animation.objects.filter(user=request.user))
-    return render(request,'visualizer.html',{'databaseAnimations':animationData});
+        animationData = serializers.serialize('json', Animation.objects.filter(user=request.user))
+    return render(request,'visualizer.html',{'databaseAnimations':animationData,'adminAnimations':adminAnimationData});
 
 def register(request):
     if request.method == "GET":
@@ -46,6 +50,22 @@ def saveSerialized(request):
             a = request.POST.__getitem__('serialized');
             dbAnimation = Animation(user=u,animations=a)
             dbAnimation.save();
+            animationData = serializers.serialize('json',Animation.objects.filter(user=u))
+            return JsonResponse({'databaseAnimations':animationData}, status=200)
+
+        else:
+            return JsonResponse({"error": form.errors}, status=400)
+
+    return JsonResponse({"error": form.errors}, status=400)
+
+def deleteDemonstration(request):
+    if request.is_ajax and request.method == 'POST':
+        print(request.POST)
+        form = Form(request.POST);
+        if form.is_valid():
+            u = User.objects.get(pk = request.user.pk);
+            a = Animation.objects.filter(pk=request.POST.__getitem__('pk'));
+            a.delete();
             animationData = serializers.serialize('json',Animation.objects.filter(user=u))
             return JsonResponse({'databaseAnimations':animationData}, status=200)
 
