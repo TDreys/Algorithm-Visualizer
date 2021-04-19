@@ -39,7 +39,8 @@
         <button id="animationTab" class="tablinks" onclick="openTab(event, 'animation')">Animations</button>
         <button id="addAnimationTab" class="tablinks" onclick="openTab(event, 'addAnimation')">Add Animation</button>
         <button id="demoSelectorTab" class="tablinks" onclick="openTab(event, 'demoSelector')">Demonstrations</button>
-        <button class="tablinks" onclick="openTab(event, 'docs')">Docs</button>
+        <button id="consoleTab" class="tablinks" onclick="openTab(event, 'console')">Console</button>
+        <button id="docTab" class="tablinks" onclick="openTab(event, 'docs')">How To Use</button>
         {% if user.is_authenticated %}
           <a href="{% url 'logout' %}"><button class="tablinks">Logout</button></a>
         {% else %}
@@ -48,7 +49,7 @@
       </div>
 
       <div id="animation" class="tabcontent">
-        <h3>Animations</h3>
+        <h2>Animations</h2>
         <label for="dataStructures">Select visualization type: </label>
         <select class="controlButton" id="dataStructures" name="dataStructures" onchange="changeAvailableAnimations();">
           <option value="list">List</option>
@@ -65,7 +66,7 @@
       </div>
 
       <div id="addAnimation" class="tabcontent">
-        <h3>Create Animation</h3>
+        <h2>Create Animation</h2>
         <div id="animationParams">
           <label for="lineNumber">Line Number: </label>
           <input id="lineNumber" type="number" name="lineNumber" value="1" class="textInput">
@@ -79,9 +80,6 @@
 
           </div>
 
-          <label for="hasElse">Inside else statement? </label>
-          <input id="hasElse" type="checkbox" name="hasElse">
-
           <button type="addAnimationButton" name="addAnimationButton" onclick="addAnimation();" class="controlButton">
             Add
           </button>
@@ -90,12 +88,22 @@
       </div>
 
       <div id="docs" class="tabcontent">
-        <h3>Documentation</h3>
-        <p>Animation functions and how to use them</p>
+        <h2>How To Use</h2>
+        <p>To add an animation to your code, use the Add Animation tab or add them programmatically
+          using the createAnimation() function. The parameters for the animations are described below.
+          Just put the animation on the line you want it, and whenever the function is called in your
+          code, an animation will be added to the animation list when the load button is clicked. The
+          run button will automatically move through the animations, or you can use the step button to
+          go through manually.
+        </p>
+
+        <div id="animationDocs">
+
+        </div>
       </div>
 
       <div id="demoSelector" class="tabcontent">
-        <h3>Demonstrations</h3>
+        <h2>Demonstrations</h2>
         <p>Select pre made demonstration</p>
         <div id="demos">
           <div id="premade" class="demoButtons">
@@ -105,6 +113,10 @@
 
           </div>
         </div>
+      </div>
+
+      <div id="console" class="tabcontent">
+        <textarea id="consoleArea" name="consoleArea" rows="20" cols="80"></textarea>
       </div>
     </div>
   </div>

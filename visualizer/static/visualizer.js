@@ -109,11 +109,81 @@ function init(){
   timeStepRange.onchange = function(){
     timeStep = this.value
   }
-  //add tooltips for animation labels
 
-  //redirects when clicking buttons
+  let consoleArea = document.getElementById('consoleArea')
+  consoleArea.readOnly = true;
 
-  //add else statement thing
+  createHowToPage();
+
+  let docTab = document.getElementById('docTab')
+  docTab.click();
+}
+
+function createHowToPage(){
+  let animationDocs = document.getElementById('animationDocs')
+
+  let listheading = document.createElement('h2')
+  listheading.innerHTML = 'List Animations';
+  animationDocs.appendChild(listheading)
+  for(let [key,value] of Object.entries(ListAnimator.availableAnimations)){
+    animationDocs.appendChild(createAnimationDoc(key,value))
+  }
+
+  let graphheading = document.createElement('h2')
+  graphheading.innerHTML = 'Graph Animations';
+  animationDocs.appendChild(graphheading)
+
+  for(let [key,value] of Object.entries(GraphAnimator.availableAnimations)){
+    animationDocs.appendChild(createAnimationDoc(key,value))
+  }
+
+  let plotheading = document.createElement('h2')
+  plotheading.innerHTML = 'Plotting Animations';
+  animationDocs.appendChild(plotheading)
+  for(let [key,value] of Object.entries(PlottingAnimator.availableAnimations)){
+    animationDocs.appendChild(createAnimationDoc(key,value))
+  }
+}
+
+function createAnimationDoc(name,info){
+  let div = document.createElement('div')
+  div.setAttribute('class','animationDoc')
+
+  let heading = document.createElement('h3')
+  let headingString = name.charAt(0).toUpperCase() + name.slice(1);
+  heading.innerHTML = headingString;
+
+  let description = document.createElement('p')
+  description.innerHTML = info.desc;
+
+  let paramHeading = document.createElement('h4')
+  paramHeading.innerHTML = 'Parameters';
+
+  let params = document.createElement('ul')
+
+  for(let [paramname,description] of Object.entries(info.params)){
+    let listItem = document.createElement('li');
+    listItem.innerHTML = paramname +': ' + description;
+    params.appendChild(listItem);
+  }
+
+  div.appendChild(heading);
+  div.appendChild(description);
+  div.appendChild(paramHeading);
+  div.appendChild(params);
+
+  return div;
+}
+
+function writeToConsole(text){
+  let consoleArea = document.getElementById('consoleArea')
+  consoleArea.value += text + '\n';
+  consoleArea.scrollTop = consoleArea.scrollHeight;
+}
+
+function clearConsole(){
+  let consoleArea = document.getElementById('consoleArea')
+  consoleArea.value = '';
 }
 
 function objectToArray(object){
@@ -127,6 +197,26 @@ function objectToArray(object){
     }
   }
   return newObject;
+}
+
+function moveCreatedAnimation(up,line,index){
+  let lineAnimations = createdAnimations[line];
+  if(up){
+    if(index != 0){
+      let temp = lineAnimations[index-1]
+      lineAnimations[index-1] = lineAnimations[index]
+      lineAnimations[index] = temp;
+    }
+  }
+  else{
+    if(index != lineAnimations.length-1){
+      let temp = lineAnimations[index+1]
+      lineAnimations[index+1] = lineAnimations[index]
+      lineAnimations[index] = temp;
+    }
+  }
+
+  updateAddedAnimations();
 }
 
 function updateIsAnimating(){
@@ -290,6 +380,8 @@ function saveDemonstration(demo){
   request.addEventListener( 'load', function(event) {
     userDemonstrations = JSON.parse(JSON.parse(this.responseText).databaseAnimations);
     updateDemonstrations();
+    let demoTab = document.getElementById('demoSelectorTab')
+    demoTab.click();
   } );
 
   request.open( 'POST', window.location.href+'saveDemonstration');
@@ -305,9 +397,11 @@ function loadDemonstration(serialized){
   createdAnimations = serialized.animations;
   editor.session.setValue(serialized.code);
   document.getElementById('dataStructures').value = serialized.type;
-
+  document.getElementById('demoName').value = serialized.name;
   updateBreakpoints();
   updateAddedAnimations();
+  let animationTab = document.getElementById('animationTab');
+  animationTab.click();
 }
 
 function updateBreakpoints(){
@@ -365,16 +459,46 @@ function updateAddedAnimations(){
       newDiv.setAttribute('class','createdAnimation');
 
       let newP = document.createElement('p')
-      let pContent = 'Animation: ' + animation.animationName + ' - Line: ' + item;
+      let pContent = animation.animationName + ' - Line: ' + item;
       newP.innerHTML = pContent;
 
       let newButton = document.createElement('button')
       newButton.setAttribute('class','animationButton');
-      newButton.setAttribute('onclick','removeAnimation('+item+','+i+')');
+      newButton.onclick = function(){
+        removeAnimation(item,i)
+      }
       newButton.innerHTML = '&#10006;';
+
+      let positionDiv = document.createElement('div')
+      positionDiv.setAttribute('class','positionDiv')
+
+      let upButton = document.createElement('button')
+      upButton.onclick = function(){
+        moveCreatedAnimation(true,item,i)
+      }
+      upButton.setAttribute('class','positionButton')
+      upButton.innerHTML = '&#9650'
+
+      let downButton = document.createElement('button')
+      downButton.onclick = function(){
+        moveCreatedAnimation(false,item,i)
+      }
+      downButton.setAttribute('class','positionButton')
+      downButton.innerHTML = '&#9660'
+
+      if(i == 0){
+        upButton.disabled = true;
+      }
+      if (i == lineAnimations.length-1) {
+        downButton.disabled = true;
+      }
+
+      positionDiv.appendChild(upButton)
+      positionDiv.appendChild(downButton)
 
       newDiv.appendChild(newP);
       newDiv.appendChild(newButton);
+      newDiv.appendChild(positionDiv);
 
       createdAnimationsDiv.appendChild(newDiv);
     });
@@ -414,13 +538,13 @@ function changeSelectedAnimation(){
   let params;
 
   if (selectedAnimator == 'list'){
-    params = ListAnimator.availableAnimations[selectedAnimation];
+    params = ListAnimator.availableAnimations[selectedAnimation].params;
   }
   else if (selectedAnimator == 'plot') {
-    params = PlottingAnimator.availableAnimations[selectedAnimation];
+    params = PlottingAnimator.availableAnimations[selectedAnimation].params;
   }
   else if(selectedAnimator == 'graph'){
-    params = GraphAnimator.availableAnimations[selectedAnimation];
+    params = GraphAnimator.availableAnimations[selectedAnimation].params;
   }
 
   keys = Object.keys(params);
@@ -450,18 +574,17 @@ function addAnimation(){
   let lineNumber = document.getElementById("lineNumber").value;
   let selectedAnimation = document.getElementById("selectedAnimation").value;
   newAnimation.animationName = selectedAnimation;
-  newAnimation.hasElse = document.getElementById('hasElse').checked;
   let selectedAnimator = document.getElementById('dataStructures').value;
   let paramCount;
 
   if (selectedAnimator == 'list'){
-    paramCount = Object.keys(ListAnimator.availableAnimations[selectedAnimation]).length;
+    paramCount = Object.keys(ListAnimator.availableAnimations[selectedAnimation].params).length;
   }
   else if (selectedAnimator == 'plot') {
-    paramCount = Object.keys(PlottingAnimator.availableAnimations[selectedAnimation]).length;
+    paramCount = Object.keys(PlottingAnimator.availableAnimations[selectedAnimation].params).length;
   }
   else if (selectedAnimator == 'graph') {
-    paramCount = Object.keys(GraphAnimator.availableAnimations[selectedAnimation]).length;
+    paramCount = Object.keys(GraphAnimator.availableAnimations[selectedAnimation].params).length;
   }
 
   let params = [];
@@ -513,6 +636,10 @@ function openTab(evt, tab) {
 }
 
 function load(){
+  clearConsole();
+  let consoleArea = document.getElementById('consoleTab')
+  consoleArea.click()
+
   let selectedAnimator = document.getElementById('dataStructures').value;
   let elem = document.getElementById('draw-shapes');
   elem.innerHTML = '';
@@ -522,10 +649,15 @@ function load(){
     two = new Two({ width: elem.offsetWidth, height: elem.offsetHeight }).appendTo(elem);
   }
 
-  let code = addAnimationsToCode();
-  myInterpreter = new Interpreter(code,initFunc);
-  animationList = [];
-  myInterpreter.run();
+  try {
+    let code = addAnimationsToCode();
+    myInterpreter = new Interpreter(code,initFunc);
+    animationList = [];
+    myInterpreter.run();
+  } catch (e) {
+    writeToConsole(e);
+    throw e;
+  }
 
   currentAnimationIndex=1;
 
@@ -537,7 +669,7 @@ function load(){
     }
   }
   else{
-    console.log("first animation must specify data structure");
+    writeToConsole("first animation must specify data structure");
     return;
   }
 
@@ -554,30 +686,40 @@ async function step(index){
 
   let currentAnimation = animationList[index];
 
-  switch (currentAnimation[0]) {
-    case 'set items':  await animator.setItems(currentAnimation[1],currentAnimation[2]); break;
-    case 'swap':  await animator.swap(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
-    case 'highlight': await animator.highlight(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
-    case 'remove highlight': await animator.removeHighlight(currentAnimation[1],currentAnimation[2]); break;
-    case 'append': await animator.append(currentAnimation[1],currentAnimation[2]); break;
-    case 'insert': await animator.insert(currentAnimation[1],currentAnimation[2],currentAnimation[3]);break;
-    case 'remove': await animator.remove(currentAnimation[1],currentAnimation[2]);break;
-    case 'replace': await animator.replace(currentAnimation[1],currentAnimation[2],currentAnimation[3]);break;
-    case 'caption': await animator.caption(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
-    case 'marker': await animator.addMarker(currentAnimation[1],currentAnimation[2]); break;
-    case 'remove marker': await animator.removeMarker(currentAnimation[1],currentAnimation[2]); break;
-    case 'plot function': await animator.plotFunction(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
-    case 'plot points': await animator.plotPoints(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
-    case 'clear plot': await animator.clearPlot(currentAnimation[1]); break;
-    case 'evaluate': await animator.evaluateFunction(currentAnimation[1],currentAnimation[2],currentAnimation[3],currentAnimation[4]);break;
-    case 'plot two point line': await animator.twoPointLine(currentAnimation[1],currentAnimation[2],currentAnimation[3],currentAnimation[4]);break;
-    case 'set graph': await animator.setGraph(currentAnimation[1],currentAnimation[2],currentAnimation[3],currentAnimation[4]);break;
-    case 'highlight node': await animator.highlightNode(currentAnimation[1],currentAnimation[2],currentAnimation[3]);break
-    case 'highlight edge': await animator.highlightEdge(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
-    case 'remove edge highlight': await animator.removeHighlightEdge(currentAnimation[1],currentAnimation[2]);break
-    case 'remove node highlight': await animator.removeHighlightNode(currentAnimation[1],currentAnimation[2]);break
-    case 'transition': await animator.transition(currentAnimation[1],currentAnimation[2],currentAnimation[3],currentAnimation[4]);break
-    default: console.log(currentAnimation[0] + ' is not an animation')
+  try {
+    switch (currentAnimation[0]) {
+      case 'set items':  await animator.setItems(currentAnimation[1],currentAnimation[2]); break;
+      case 'swap':  await animator.swap(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
+      case 'highlight': await animator.highlight(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
+      case 'remove highlight': await animator.removeHighlight(currentAnimation[1],currentAnimation[2]); break;
+      case 'append': await animator.append(currentAnimation[1],currentAnimation[2]); break;
+      case 'insert': await animator.insert(currentAnimation[1],currentAnimation[2],currentAnimation[3]);break;
+      case 'remove': await animator.remove(currentAnimation[1],currentAnimation[2]);break;
+      case 'replace': await animator.replace(currentAnimation[1],currentAnimation[2],currentAnimation[3]);break;
+      case 'caption': await animator.caption(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
+      case 'marker': await animator.addMarker(currentAnimation[1],currentAnimation[2]); break;
+      case 'remove marker': await animator.removeMarker(currentAnimation[1],currentAnimation[2]); break;
+      case 'plot function': await animator.plotFunction(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
+      case 'plot points': await animator.plotPoints(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
+      case 'clear plot': await animator.clearPlot(currentAnimation[1]); break;
+      case 'evaluate': await animator.evaluateFunction(currentAnimation[1],currentAnimation[2],currentAnimation[3],currentAnimation[4]);break;
+      case 'plot two point line': await animator.twoPointLine(currentAnimation[1],currentAnimation[2],currentAnimation[3],currentAnimation[4]);break;
+      case 'set graph': await animator.setGraph(currentAnimation[1],currentAnimation[2],currentAnimation[3],currentAnimation[4]);break;
+      case 'highlight node': await animator.highlightNode(currentAnimation[1],currentAnimation[2],currentAnimation[3]);break
+      case 'highlight edge': await animator.highlightEdge(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
+      case 'remove edge highlight': await animator.removeHighlightEdge(currentAnimation[1],currentAnimation[2]);break
+      case 'remove node highlight': await animator.removeHighlightNode(currentAnimation[1],currentAnimation[2]);break
+      case 'transition': await animator.transition(currentAnimation[1],currentAnimation[2],currentAnimation[3],currentAnimation[4]);break
+      default: writeToConsole(currentAnimation[0] + ' is not an animation')
+    }
+  } catch (e) {
+    writeToConsole(e + ' on animation: ' + currentAnimation[0] + ' (parameters may be wrong)');
+    running = false;
+    isAnimating = false;
+    updateRunning();
+    updateIsAnimating();
+    currentAnimationIndex=0;
+    throw e;
   }
 
   if(index == animationList.length-1){
@@ -589,6 +731,9 @@ async function step(index){
 }
 
 async function execute(){
+  let consoleArea = document.getElementById('consoleTab')
+  consoleArea.click()
+
   if(!running){
     return;
   }
@@ -623,6 +768,7 @@ function initFunc(interpreter, globalObject){
   interpreter.setProperty(globalObject, 'console', consoleWrapper);
 
   var logWrapper = function(text) {
+    writeToConsole(text);
     return console.log(text);
   };
   interpreter.setProperty(consoleWrapper, 'log',interpreter.createNativeFunction(logWrapper));

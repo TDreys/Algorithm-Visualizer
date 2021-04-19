@@ -1,11 +1,26 @@
-<h2>Login</h2>
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    {% load static %}
+    <meta charset="utf-8">
+    <title>Login</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+  </head>
+  <body>
+    <div class="formDiv">
+      <div>
+        <h2>Login</h2>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Login">
-</form>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="Login" class="controlButton">
+        </form>
 
-<a href="{% url 'visualizer' %}">Visualizer</a>
+        <a href="{% url 'visualizer' %}" class="controlButton">Visualizer</a>
 
-<a href="{% url 'register' %}">Not Registered?</a>
+        <a href="{% url 'register' %}" class="controlButton">Not Registered?</a>
+      </div>
+    </div>
+  </body>
+</html>

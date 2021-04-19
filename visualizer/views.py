@@ -60,7 +60,6 @@ def saveSerialized(request):
 
 def deleteDemonstration(request):
     if request.is_ajax and request.method == 'POST':
-        print(request.POST)
         form = Form(request.POST);
         if form.is_valid():
             u = User.objects.get(pk = request.user.pk);

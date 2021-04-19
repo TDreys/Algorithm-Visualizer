@@ -68,16 +68,17 @@ class ListAnimator{
   itemColor = 'DarkGray';
   maxFillRatio = 0.7;
   static availableAnimations={
-    'set items':{'items':'list of items or variable name','pause':'time between this animation and the next in milliseconds'},
-    'swap':{'index 1':'index of first item','index 2':'index of second item','pause':'time between this animation and the next in milliseconds'},
-    'highlight':{'index(es)':'the index of an item or list of indices to highlight','color':'css color of the highlight','pause':'time between this animation and the next in milliseconds'},
-    'remove highlight':{'index(es)':'the index of an item or list of indices to remove highlights','pause':'time between this animation and the next in milliseconds'},
-    'append':{'value':'value to append to the list','pause':'time between this animation and the next in milliseconds'},
-    'insert':{'index':'index of the item to be inserted','value':'value of the item inserted','pause':'time between this animation and the next in milliseconds'},
-    'remove':{'index':'index of the item to remove','pause':'time between this animation and the next in milliseconds'},
-    'replace':{'index':'index of the item to replace','value':'value of the new item','pause':'time between this animation and the next in milliseconds'},
-    'caption':{'name':'name of the caption','value':'value of the caption','pause':'time between this animation and the next in milliseconds'},
-    'marker':{'index':'add marker to the right of the item at index','pause':'time between this animation and the next in milliseconds'}};
+    'set items':{desc:'change the displayed list to the given items',params:{'items':'list of items or variable name','pause':'time between this animation and the next in milliseconds'}},
+    'swap':{desc:'swap two items in the displayed list',params:{'index 1':'index of first item','index 2':'index of second item','pause':'time between this animation and the next in milliseconds'}},
+    'highlight':{desc:'highlight items in a list',params:{'index(es)':'the index of an item or list of indices to highlight','color':'css color of the highlight','pause':'time between this animation and the next in milliseconds'}},
+    'remove highlight':{desc:'remove highlights from items',params:{'index(es)':'the index of an item or list of indices to remove highlights','pause':'time between this animation and the next in milliseconds'}},
+    'append':{desc:'append an item to the end on the list',params:{'value':'value to append to the list','pause':'time between this animation and the next in milliseconds'}},
+    'insert':{desc:'insert an item into the list',params:{'index':'index of the item to be inserted','value':'value of the item inserted','pause':'time between this animation and the next in milliseconds'}},
+    'remove':{desc:'remove an item from the list',params:{'index':'index of the item to remove','pause':'time between this animation and the next in milliseconds'}},
+    'replace':{desc:'replace an item in the list with a new item',params:{'index':'index of the item to replace','value':'value of the new item','pause':'time between this animation and the next in milliseconds'}},
+    'caption':{desc:'add a caption to give more information',params:{'name':'name of the caption','value':'value of the caption','pause':'time between this animation and the next in milliseconds'}},
+    'marker':{desc:'add a marker',params:{'index':'add marker to the right of the item at index','pause':'time between this animation and the next in milliseconds'}},
+    'remove marker':{desc:'remove a marker',params:{'index':'remove marker to the right of the item at index','pause':'time between this animation and the next in milliseconds'}}};
 
   createListGroups(){
     let padding = 20;
@@ -388,11 +389,11 @@ class PlottingAnimator{
   }
 
   static availableAnimations={
-    'plot function':{'function string':'function to plot','pause':'time between this animation and the next in milliseconds','color':'color of the line'},
-    'plot points':{'points':'2d list of x,y points','pause':'time between this animation and the next in milliseconds','color':'color of the line'},
-    'clear plot':{'pause':'time between this animation and the next in milliseconds'},
-    'evaluate':{'function string':'function to evaluate','x value':'x value to evaluate','pause':'time between this animation and the next in milliseconds','color':'color of the line'},
-    'plot two point line':{'point 1':'list with the x and y coordinate','point 2':'list with the x and y coordinate','pause':'time between this animation and the next in milliseconds','color':'color of the line'},
+    'plot function':{desc:'plot a function from a given string',params:{'function string':'function to plot','pause':'time between this animation and the next in milliseconds','color':'color of the line'}},
+    'plot points':{desc:'plot points onto a plot',params:{'points':'2d list of x,y points','pause':'time between this animation and the next in milliseconds','color':'color of the line'}},
+    'clear plot':{desc:'remove all functions and points from a plot',params:{'pause':'time between this animation and the next in milliseconds'}},
+    'evaluate':{desc:'display a point by evaluating a function a function at a given x value',params:{'function string':'function to evaluate','x value':'x value to evaluate','pause':'time between this animation and the next in milliseconds','color':'color of the line'}},
+    'plot two point line':{desc:'plot a straight line between two points',params:{'point 1':'list with the x and y coordinate','point 2':'list with the x and y coordinate','pause':'time between this animation and the next in milliseconds','color':'color of the line'}},
   };
 
   drawPlots(){
@@ -459,13 +460,13 @@ class GraphAnimator{
   isDirected = false;
   maxFillRatio = 0.7;
   static availableAnimations={
-    'set graph':{'graph':'graph to display','type':'type of represenation','directed?':'is the graph directed','pause':'time between this animation and the next in milliseconds'},
-    'highlight node':{'node(s)':'index of the node or list of indexes','color':'css color of the highlight','pause':'time between this animation and the next in milliseconds'},
-    'remove node highlight':{'node(s)':'index of the node or list of indexes to remove highlight','pause':'time between this animation and the next in milliseconds'},
-    'highlight edge':{'edge(s)':'list of start and end node pairs for the edge i.e [[0,1],[2,3]]','color':'color of the highlight','pause':'time between this animation and the next in milliseconds'},
-    'remove edge highlight':{'edge(s)':'list of start and end node pairs for the edge i.e [[0,1],[2,3]] to remove highlight from','pause':'time between this animation and the next in milliseconds'},
-    'transition':{'origin':'origin node of the transition','nodes':'list of indexes where the transition goes to','color':'color of the transition','pause':'time between this animation and the next in milliseconds'},
-    'caption':{'name':'name of the caption','value':'value of the caption','pause':'time between this animation and the next in milliseconds'},
+    'set graph':{desc:'change the displayed graph to the graph given',params:{'graph':'graph to display','type':'type of represenation','directed?':'is the graph directed','pause':'time between this animation and the next in milliseconds'}},
+    'highlight node':{desc:'highlight a node on a graph',params:{'node(s)':'index of the node or list of indexes','color':'css color of the highlight','pause':'time between this animation and the next in milliseconds'}},
+    'remove node highlight':{desc:'remove the highlights from a node',params:{'node(s)':'index of the node or list of indexes to remove highlight','pause':'time between this animation and the next in milliseconds'}},
+    'highlight edge':{desc:'highlight an edge on a graph',params:{'edge(s)':'list of start and end node pairs for the edge i.e [[0,1],[2,3]]','color':'color of the highlight','pause':'time between this animation and the next in milliseconds'}},
+    'remove edge highlight':{desc:'remove the highlights from an edge on a graph',params:{'edge(s)':'list of start and end node pairs for the edge i.e [[0,1],[2,3]] to remove highlight from','pause':'time between this animation and the next in milliseconds'}},
+    'transition':{desc:'animate a transition between an origin node and connected nodes',params:{'origin':'origin node of the transition','nodes':'list of indexes where the transition goes to','color':'color of the transition','pause':'time between this animation and the next in milliseconds'}},
+    'caption':{desc:'add a caption to give more information',params:{'name':'name of the caption','value':'value of the caption','pause':'time between this animation and the next in milliseconds'}},
   };
 
   generateFromAdjecencyMatrix(data){
