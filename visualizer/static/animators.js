@@ -208,8 +208,8 @@ class ListAnimator{
     await sleep(pause/timeStep);
   }
 
-  async removeHighlight(index){
-    await this.highlight(index,this.itemColor);
+  async removeHighlight(index,pause){
+    await this.highlight(index,this.itemColor,pause);
   }
 
   async append(item,pause = 1000){
@@ -469,10 +469,6 @@ class GraphAnimator{
     'caption':{desc:'add a caption to give more information',params:{'name':'name of the caption','value':'value of the caption','pause':'time between this animation and the next in milliseconds'}},
   };
 
-  generateFromAdjecencyMatrix(data){
-    return this.testmake();
-  }
-
   generateFromAdjecencyArray(data){
     let newGraph = new Springy.Graph();
     let nodes = []
@@ -495,9 +491,6 @@ class GraphAnimator{
     return newGraph;
   }
 
-  generateFromIncidenceMatrix(data){
-    return this.testmake();
-  }
 
   calculateLayout(){
     this.layout = new Springy.Layout.ForceDirected(
@@ -507,7 +500,7 @@ class GraphAnimator{
       0.7 // Damping
     );
 
-    for(let i = 0; i< 2000; i++){
+    for(let i = 0; i< 10000; i++){
       this.layout.tick(0.03);
     }
 
@@ -625,18 +618,10 @@ class GraphAnimator{
     this.draw();
   }
 
-  async setGraph(graph,type,directed,pause = 1000){
+  async setGraph(graph,directed,pause = 1000){
     this.isDirected = directed;
 
-    if(type == 'adjecency'){
-      this.graph = this.generateFromAdjecencyMatrix(graph);
-    }
-    else if(type == 'incidence'){
-      this.graph = this.generateFromIncidenceMatrix(graph);
-    }
-    else if (type == 'array') {
-      this.graph = this.generateFromAdjecencyArray(graph);
-    }
+    this.graph = this.generateFromAdjecencyArray(graph);
 
     this.calculateLayout();
     this.draw();

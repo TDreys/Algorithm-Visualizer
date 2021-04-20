@@ -704,7 +704,7 @@ async function step(index){
       case 'clear plot': await animator.clearPlot(currentAnimation[1]); break;
       case 'evaluate': await animator.evaluateFunction(currentAnimation[1],currentAnimation[2],currentAnimation[3],currentAnimation[4]);break;
       case 'plot two point line': await animator.twoPointLine(currentAnimation[1],currentAnimation[2],currentAnimation[3],currentAnimation[4]);break;
-      case 'set graph': await animator.setGraph(currentAnimation[1],currentAnimation[2],currentAnimation[3],currentAnimation[4]);break;
+      case 'set graph': await animator.setGraph(currentAnimation[1],currentAnimation[2],currentAnimation[3]);break;
       case 'highlight node': await animator.highlightNode(currentAnimation[1],currentAnimation[2],currentAnimation[3]);break
       case 'highlight edge': await animator.highlightEdge(currentAnimation[1],currentAnimation[2],currentAnimation[3]); break;
       case 'remove edge highlight': await animator.removeHighlightEdge(currentAnimation[1],currentAnimation[2]);break
