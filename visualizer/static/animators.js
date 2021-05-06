@@ -1,7 +1,21 @@
+
+
+/**
+ * sleep - function to await for a period of time
+ *
+ * @param  {type} ms time in ms to wait
+ */
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+
+/**
+ * colourNameToHex - convert css color name to hex
+ *
+ * @param  {type} colour color to convert
+ * @return {type}        color in hex
+ */
 function colourNameToHex(colour)
 {
     var colours = {"aliceblue":"#f0f8ff","antiquewhite":"#faebd7","aqua":"#00ffff","aquamarine":"#7fffd4","azure":"#f0ffff",
@@ -46,6 +60,11 @@ class ListItem{
     this.value = value;
   }
 
+  /**
+   * createGroup - create the Two.js group for a list item
+   *
+   * @param  {type} color color of the item
+   */
   createGroup(color){
     let itemGroup = new Two.Group();
     let rect = two.makeRectangle(0,0,this.itemSize,this.itemSize);
@@ -80,6 +99,12 @@ class ListAnimator{
     'marker':{desc:'add a marker',params:{'index':'add marker to the right of the item at index','pause':'time between this animation and the next in milliseconds'}},
     'remove marker':{desc:'remove a marker',params:{'index':'remove marker to the right of the item at index','pause':'time between this animation and the next in milliseconds'}}};
 
+
+  /**
+   * createListGroups - create the Two.js groups for all items in the list
+   *
+   * @return {type}  description
+   */
   createListGroups(){
     let padding = 20;
     let currentx = 0;
@@ -91,6 +116,10 @@ class ListAnimator{
     })
   }
 
+
+  /**
+   * draw - draw the list to the canvas
+   */
   draw(){
     two.clear();
 
@@ -119,6 +148,12 @@ class ListAnimator{
     two.update();
   }
 
+
+  /**
+   * createCaptionGroups - create the Two.js groups for the captions
+   *
+   * @return {type}  groups for the captions
+   */
   createCaptionGroups(){
     let group = new Two.Group();
     let y = 0;
@@ -140,11 +175,25 @@ class ListAnimator{
     return group;
   }
 
+
+  /**
+   * async caption - add a caption
+   *
+   * @param  {type} name   name of the caption
+   * @param  {type} values value of the caption
+   */
   async caption(name,values){
     this.captions[name] = values;
     this.draw();
   }
 
+
+  /**
+   * async setItems - set the items for the list
+   *
+   * @param  {type} items        list items
+   * @param  {type} pause = 1000 time between this animation and the next
+   */
   async setItems(items,pause = 1000){
     this.items = [];
     items.forEach((item) => {
@@ -155,6 +204,14 @@ class ListAnimator{
     await sleep(pause/timeStep);
   }
 
+
+  /**
+   * async swap - animate two items swapping in a list
+   *
+   * @param  {type} i            index of first item
+   * @param  {type} j            index of second item
+   * @param  {type} pause = 1000 time between this animation and the next
+   */
   async swap(i,j,pause = 1000){
     two.frameCount = 0;
 
@@ -194,6 +251,14 @@ class ListAnimator{
 
   }
 
+
+  /**
+   * async highlight - highlight an item or list of items
+   *
+   * @param  {type} index        index or list of indexes to highlight
+   * @param  {type} color        color of the highlight
+   * @param  {type} pause = 1000 time between this animation and the next
+   */
   async highlight(index,color,pause = 1000){
     if(typeof index == 'object'){
       for(let i = 0; i<=index.length-1; i++){
@@ -208,10 +273,24 @@ class ListAnimator{
     await sleep(pause/timeStep);
   }
 
+
+  /**
+   * async removeHighlight - remove highlight from items
+   *
+   * @param  {type} index index or list of indexes to remove highlight from
+   * @param  {type} pause time between this animation and the next
+   */
   async removeHighlight(index,pause){
     await this.highlight(index,this.itemColor,pause);
   }
 
+
+  /**
+   * async append - animate an item being appended to the list
+   *
+   * @param  {type} item         item to append
+   * @param  {type} pause = 1000 time between this animation and the next
+   */
   async append(item,pause = 1000){
     this.items.push(new ListItem(item));
     this.createListGroups();
@@ -235,6 +314,13 @@ class ListAnimator{
     await sleep(pause/timeStep);
   }
 
+
+  /**
+   * async addMarker - add a marker to the right of an item
+   *
+   * @param  {type} index        index of the item
+   * @param  {type} pause = 1000 time between this animation and the next
+   */
   async addMarker(index,pause = 1000){
     let rect = two.makeRectangle(0,0,5,60);
     rect.fill = colourNameToHex('white');
@@ -262,6 +348,13 @@ class ListAnimator{
     await sleep(pause/timeStep)
   }
 
+
+  /**
+   * async removeMarker - remove a marker from an item
+   *
+   * @param  {type} index        item to remove marker from
+   * @param  {type} pause = 1000 time between this animation and the next
+   */
   async removeMarker(index,pause = 1000){
     let foundIndex;
     this.extraGroups.forEach((item, i) => {
@@ -291,6 +384,14 @@ class ListAnimator{
     await sleep(pause/timeStep)
   }
 
+
+  /**
+   * async insert - animate inserting an item into the list
+   *
+   * @param  {type} index        index to insert item
+   * @param  {type} item         item to insert
+   * @param  {type} pause = 1000 time between this animation and the next
+   */
   async insert(index, item,pause = 1000){
     this.items.splice(index, 0, new ListItem(item));
     this.createListGroups();
@@ -316,6 +417,13 @@ class ListAnimator{
     await sleep(pause/timeStep);
   }
 
+
+  /**
+   * async remove - animate removing an item from the list
+   *
+   * @param  {type} index        index of the item to remove
+   * @param  {type} pause = 1000 time between this animation and the next
+   */
   async remove(index,pause = 1000){
     let toRemove = this.items[index].group
     let frames = Math.floor(30/timeStep);
@@ -339,6 +447,14 @@ class ListAnimator{
     await sleep(pause/timeStep)
   }
 
+
+  /**
+   * async replace - animate replacing an item in the list
+   *
+   * @param  {type} index        index of the item to replace
+   * @param  {type} newValue     new item
+   * @param  {type} pause = 1000 time between this animation and the next
+   */
   async replace(index, newValue,pause = 1000){
     let newItem = new ListItem(newValue);
     let distance = 50;
@@ -400,12 +516,28 @@ class PlottingAnimator{
     functionPlot(this.options)
   }
 
+
+  /**
+   * async plotFunction - plot a given function
+   *
+   * @param  {type} functionString function to plot
+   * @param  {type} pause = 0      time between this animation and the next
+   * @param  {type} color          color of the plot
+   */
   async plotFunction(functionString,pause = 0,color){
     this.options.data.push({fn:functionString,color:color})
     this.drawPlots();
     await sleep(pause/timeStep);
   }
 
+
+  /**
+   * async plotPoints - plot a list of points
+   *
+   * @param  {type} pointsList 2d list of point to plot
+   * @param  {type} pause = 0  time between this animation and the next
+   * @param  {type} color      color of the points
+   */
   async plotPoints(pointsList,pause = 0,color){
 
     this.options.data.push({
@@ -419,6 +551,12 @@ class PlottingAnimator{
     await sleep(pause/timeStep);
   }
 
+
+  /**
+   * async clearPlot - clear the plot
+   *
+   * @param  {type} pause = 0 time between this animation and the next
+   */
   async clearPlot(pause = 0){
     this.options.data = []
     document.getElementById('draw-shapes').innerHTML = '';
@@ -427,6 +565,15 @@ class PlottingAnimator{
     await sleep(pause/timeStep);
   }
 
+
+  /**
+   * async evaluateFunction - evaluate a function at a given point
+   *
+   * @param  {type} functionString function to evaluate
+   * @param  {type} xCoord         x coord to evaluate
+   * @param  {type} pause = 0      time between this animation and the next
+   * @param  {type} color          color of the point
+   */
   async evaluateFunction(functionString,xCoord,pause = 0,color){
     let datum = {fn:functionString, color:color};
     let scope = {x:xCoord}
@@ -436,6 +583,15 @@ class PlottingAnimator{
     await this.plotPoints(point,pause);
   }
 
+
+  /**
+   * async twoPointLine - plot a straight line between two points
+   *
+   * @param  {type} point1    x,y coord of the first point
+   * @param  {type} point2    x,y coord of the second point
+   * @param  {type} pause = 0 time between this animation and the next
+   * @param  {type} color     color of the line
+   */
   async twoPointLine(point1,point2,pause = 0,color){
     this.options.data.push({
       fnType: 'points',
@@ -469,6 +625,13 @@ class GraphAnimator{
     'caption':{desc:'add a caption to give more information',params:{'name':'name of the caption','value':'value of the caption','pause':'time between this animation and the next in milliseconds'}},
   };
 
+
+  /**
+   * generateFromAdjecencyArray - generate a Springy graph from adjecency array
+   *
+   * @param  {type} data adjecency array
+   * @return {type}      Springy graph for the data
+   */
   generateFromAdjecencyArray(data){
     let newGraph = new Springy.Graph();
     let nodes = []
@@ -492,6 +655,9 @@ class GraphAnimator{
   }
 
 
+  /**
+   * calculateLayout - simulate graph and create two.js groups for the graph
+   */
   calculateLayout(){
     this.layout = new Springy.Layout.ForceDirected(
       this.graph,
@@ -527,6 +693,7 @@ class GraphAnimator{
         let line = two.makeLine(p1.x*50,p1.y*50,p2.x*50,p2.y*50);
         line.stroke = colourNameToHex('white');
         line.opacity = 1;
+        line.linewidth = 2;
         arrowGroup.add(line);
         arrowGroup.add(triangle);
         group.add(arrowGroup);
@@ -534,6 +701,7 @@ class GraphAnimator{
       else {
         let line = two.makeLine(p1.x*50,p1.y*50,p2.x*50,p2.y*50);
         line.stroke = colourNameToHex('white');
+        line.linewidth = 2;
         group.add(line);
       }
       let data = '';
@@ -563,6 +731,10 @@ class GraphAnimator{
     this.nodes = nodesTemp;
   }
 
+
+  /**
+   * draw - draw the graph onto the display
+   */
   draw(){
     two.clear();
     let group = new Two.Group();
@@ -592,6 +764,10 @@ class GraphAnimator{
     two.update();
   }
 
+
+  /**
+   * createCaptionGroups - create two.js groups for the captions
+   */
   createCaptionGroups(){
     let group = new Two.Group();
     let y = 0;
@@ -613,11 +789,26 @@ class GraphAnimator{
     return group;
   }
 
+
+  /**
+   * async caption - add a caption
+   *
+   * @param  {type} name   name of the caption
+   * @param  {type} values value of the caption
+   */
   async caption(name,values){
     this.captions[name] = values;
     this.draw();
   }
 
+
+  /**
+   * async setGraph - set the graph from given data
+   *
+   * @param  {type} graph        adjecency array representation of the graph
+   * @param  {type} directed     is the graph directed?
+   * @param  {type} pause = 1000 time between this animation and the next
+   */
   async setGraph(graph,directed,pause = 1000){
     this.isDirected = directed;
 
@@ -629,6 +820,14 @@ class GraphAnimator{
     await sleep(pause/timeStep)
   }
 
+
+  /**
+   * async highlightNode - highlight a node in the graph
+   *
+   * @param  {type} node         index or list of indexes of the nodes
+   * @param  {type} color        color to highlight
+   * @param  {type} pause = 1000 time between this animation and the next
+   */
   async highlightNode(node,color,pause = 1000){
     if(typeof node == 'object'){
       for(let i = 0; i<=node.length-1; i++){
@@ -643,10 +842,25 @@ class GraphAnimator{
     await sleep(pause/timeStep)
   }
 
+
+  /**
+   * async removeHighlightNode - remove highlight from node or list of nodes
+   *
+   * @param  {type} node         node index or list of indexes
+   * @param  {type} pause = 1000 time between this animation and the next
+   */
   async removeHighlightNode(node,pause = 1000){
     await this.highlightNode(node,'darkgray',pause)
   }
 
+
+  /**
+   * async highlightEdge - highlight an edge in the graph, only if edge exists
+   *
+   * @param  {type} nodes        list of start and end node pairs
+   * @param  {type} color        color to highlight the edges
+   * @param  {type} pause = 1000 time between this animation and the next
+   */
   async highlightEdge(nodes,color,pause = 1000){
     let directed = this.isDirected;
     nodes.forEach((item, i) => {
@@ -670,10 +884,26 @@ class GraphAnimator{
     await sleep(pause/timeStep);
   }
 
+
+  /**
+   * async removeHighlightEdge - remove highlights from edges
+   *
+   * @param  {type} nodes        list of start and end node pairs
+   * @param  {type} pause = 1000 time between this animation and the next
+   */
   async removeHighlightEdge(nodes,pause = 1000){
     await this.highlightEdge(nodes,'white',pause)
   }
 
+
+  /**
+   * async transition - animate a transition between a root node and end nodes
+   *
+   * @param  {type} root         root node
+   * @param  {type} nodes        nodes to transition to
+   * @param  {type} color        color of the transition
+   * @param  {type} pause = 1000 time between this animation and the next
+   */
   async transition(root,nodes,color,pause = 1000){
     let initialx = this.nodes[root].translation.x;
     let initialy = this.nodes[root].translation.y;

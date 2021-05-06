@@ -23,6 +23,9 @@ class Demonstration{
   name;
 }
 
+/**
+ * init - initialise the webpage
+ */
 function init(){
 
   changeAvailableAnimations();
@@ -119,6 +122,9 @@ function init(){
   docTab.click();
 }
 
+/**
+ * createHowToPage - add information to how to page
+ */
 function createHowToPage(){
   let animationDocs = document.getElementById('animationDocs')
 
@@ -145,6 +151,15 @@ function createHowToPage(){
   }
 }
 
+
+
+/**
+ * createAnimationDoc - create a div with content describing an animation
+ *
+ * @param  {type} name name of the animation
+ * @param  {type} info animation info
+ * @return {type}      div containing the content
+ */
 function createAnimationDoc(name,info){
   let div = document.createElement('div')
   div.setAttribute('class','animationDoc')
@@ -175,17 +190,34 @@ function createAnimationDoc(name,info){
   return div;
 }
 
+
+/**
+ * writeToConsole - add text to the console in the console tab
+ *
+ * @param  {type} text text to write
+ */
 function writeToConsole(text){
   let consoleArea = document.getElementById('consoleArea')
   consoleArea.value += text + '\n';
   consoleArea.scrollTop = consoleArea.scrollHeight;
 }
 
+
+/**
+ * clearConsole - clear the console in the console tab
+ */
 function clearConsole(){
   let consoleArea = document.getElementById('consoleArea')
   consoleArea.value = '';
 }
 
+
+/**
+ * objectToArray - convert a InterpreterObject to an array
+ *
+ * @param  {type} object object to convert
+ * @return {type}        the object as an array
+ */
 function objectToArray(object){
   let newObject = object;
   if(object != undefined){
@@ -199,6 +231,14 @@ function objectToArray(object){
   return newObject;
 }
 
+
+/**
+ * moveCreatedAnimation - move an added animation up or down in the order it is added to the line
+ *
+ * @param  {type} up   true if moving up, false if moving down
+ * @param  {type} line  the line the animation is located
+ * @param  {type} index index in the array for the line
+ */
 function moveCreatedAnimation(up,line,index){
   let lineAnimations = createdAnimations[line];
   if(up){
@@ -219,6 +259,10 @@ function moveCreatedAnimation(up,line,index){
   updateAddedAnimations();
 }
 
+
+/**
+ * updateIsAnimating - update ui depending on if the app is currently animating an animation
+ */
 function updateIsAnimating(){
   if(isAnimating){
     document.getElementById('runButton').disabled = true;
@@ -233,6 +277,10 @@ function updateIsAnimating(){
   }
 }
 
+
+/**
+ * updateRunning - update ui depending on if the app is currently running a demonstration
+ */
 function updateRunning(){
   if(running){
     let run = document.getElementById('runButton');
@@ -250,6 +298,12 @@ function updateRunning(){
   }
 }
 
+
+/**
+ * updateLoaded - update ui if a demonstration is currently loaded
+ *
+ * @param  {type} loaded is a demonstration loaded?
+ */
 function updateLoaded(loaded){
   if(loaded){
     let run = document.getElementById('runButton');
@@ -268,6 +322,10 @@ function updateLoaded(loaded){
   }
 }
 
+
+/**
+ * updateDemonstrations - update the demonstrations in the demonstrations tab
+ */
 function updateDemonstrations(){
 
   let usermadeDiv = document.getElementById('usermade');
@@ -311,6 +369,13 @@ function updateDemonstrations(){
   });
 }
 
+
+/**
+ * getCookie - get cookie data
+ *
+ * @param  {type} name name of the cookie
+ * @return {type}      cookie value
+ */
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -326,6 +391,10 @@ function getCookie(name) {
     return cookieValue;
 }
 
+
+/**
+ * addDemonstration - get demonstration data and save
+ */
 function addDemonstration(){
   let demo = new Object();
   demo.code = editor.session.getValue();
@@ -334,11 +403,15 @@ function addDemonstration(){
   demo.name = document.getElementById('demoName').value;
 
   userDemonstrations.push(demo);
-  console.log(userDemonstrations)
-  console.log(demo)
   saveDemonstration(demo);
 }
 
+
+/**
+ * deleteDemonstration - delete an animation from the database
+ *
+ * @param  {type} pk primary key of the demonstration
+ */
 function deleteDemonstration(pk){
   let confirmation = confirm('Are you sure you want to delete this demonstration?')
 
@@ -364,6 +437,12 @@ function deleteDemonstration(pk){
   }
 }
 
+
+/**
+ * saveDemonstration - save a demonstration to the database
+ *
+ * @param  {type} demo the demonstration to save
+ */
 function saveDemonstration(demo){
 
   let serialized = JSON.stringify(demo);
@@ -393,6 +472,12 @@ function saveDemonstration(demo){
   request.send(urlData);
 }
 
+
+/**
+ * loadDemonstration - load demonstration into the application from JSON data
+ *
+ * @param  {type} serialized JSON represenation of the demonstration
+ */
 function loadDemonstration(serialized){
   createdAnimations = serialized.animations;
   editor.session.setValue(serialized.code);
@@ -404,6 +489,10 @@ function loadDemonstration(serialized){
   animationTab.click();
 }
 
+
+/**
+ * updateBreakpoints - update the breakpoints on the editor to represent added animations
+ */
 function updateBreakpoints(){
   editor.session.clearBreakpoints();
 
@@ -415,6 +504,12 @@ function updateBreakpoints(){
 
 }
 
+
+/**
+ * addAnimationsToCode - take the added animations and add them to the code
+ *
+ * @return {type}  code with animations added
+ */
 function addAnimationsToCode(){
   let code = ''
 
@@ -445,6 +540,10 @@ function addAnimationsToCode(){
 
 }
 
+
+/**
+ * updateAddedAnimations - update the ui to display the added animations
+ */
 function updateAddedAnimations(){
   let createdAnimationsDiv = document.getElementById('createdAnimations')
   createdAnimationsDiv.innerHTML = '';
@@ -506,6 +605,10 @@ function updateAddedAnimations(){
 
 }
 
+
+/**
+ * changeAvailableAnimations - update the available animations to reflect data structure
+ */
 function changeAvailableAnimations(){
   let selectedAnimator = document.getElementById('dataStructures').value;
   let availableAnimations = [];
@@ -530,6 +633,10 @@ function changeAvailableAnimations(){
 
 }
 
+
+/**
+ * changeSelectedAnimation - change the selected animation and update ui to display parameters
+ */
 function changeSelectedAnimation(){
   let paramDiv = document.getElementById('params');
   paramDiv.innerHTML = '';
@@ -569,6 +676,10 @@ function changeSelectedAnimation(){
 
 }
 
+
+/**
+ * addAnimation - add an animation to added animations
+ */
 function addAnimation(){
   let newAnimation = new CreatedAnimation();
   let lineNumber = document.getElementById("lineNumber").value;
@@ -608,6 +719,13 @@ function addAnimation(){
   updateBreakpoints();
 }
 
+
+/**
+ * removeAnimation - remove an animation from added animations
+ *
+ * @param  {type} line  line the animation is located
+ * @param  {type} index index of the animation in the list
+ */
 function removeAnimation(line,index){
   createdAnimations[line].splice(index,1);
   console.log(createdAnimations[line])
@@ -618,6 +736,14 @@ function removeAnimation(line,index){
   updateBreakpoints();
 }
 
+
+/**
+ * openTab - open a tab
+ *
+ * @param  {type} evt
+ * @param  {type} tab
+ * @return {type}
+ */
 function openTab(evt, tab) {
   let i, tabcontent, tablinks;
 
@@ -635,6 +761,10 @@ function openTab(evt, tab) {
   evt.currentTarget.className += " active";
 }
 
+
+/**
+ * load - run the code with JS-Interpreter
+ */
 function load(){
   clearConsole();
   let consoleArea = document.getElementById('consoleTab')
@@ -676,12 +806,12 @@ function load(){
   updateLoaded(true);
 }
 
-function nextStep() {
-  if (myInterpreter.step()) {
-    window.setTimeout(nextStep, 0);
-  }
-}
 
+/**
+ * step - animate the next animation
+ *
+ * @param  {type} index index of the animation to animate
+ */
 async function step(index){
 
   let currentAnimation = animationList[index];
@@ -730,6 +860,10 @@ async function step(index){
   isAnimating = false;
 }
 
+
+/**
+ * execute - go through animations automatically
+ */
 async function execute(){
   let consoleArea = document.getElementById('consoleTab')
   consoleArea.click()
@@ -747,6 +881,12 @@ async function execute(){
   }
 }
 
+
+/**
+ * createAnimation - wrapper function for createAnimation(), add animation to animation slist
+ *
+ * @param  {type} animation animation to add
+ */
 function createAnimation(animation){
   for(let i = 0;i < animation.length; i++){
     animation[i] = objectToArray(animation[i]);
@@ -755,6 +895,13 @@ function createAnimation(animation){
   animationList.push(animation);
 }
 
+
+/**
+ * initFunc - initialise JS-Interpreter
+ *
+ * @param  {type} interpreter  interpreter object to initilise
+ * @param  {type} globalObject globalObject for interpreter
+ */
 function initFunc(interpreter, globalObject){
 
   //alert()
